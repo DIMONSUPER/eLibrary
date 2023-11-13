@@ -1,6 +1,13 @@
-'use client'
+'use client';
 
-import { Author, Book, deleteBook, getAuthors, getBook, updateBook } from '@/services/api';
+import {
+  Author,
+  Book,
+  deleteBook,
+  getAuthors,
+  getBook,
+  updateBook,
+} from '@/services/api';
 import {
   TextInput,
   Paper,
@@ -14,19 +21,18 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { upperFirst } from '@mantine/hooks';
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-export default function BookDetails({bookId}:{bookId:number}) {
-  
-  const router = useRouter()
+export default function BookDetails({ bookId }: { bookId: number }) {
+  const router = useRouter();
 
   const [authors, setAuthors] = useState<Author[]>();
   const [book, setBook] = useState<Book>();
   const [authorValue, setAuthorValue] = useState('');
   const [opened, setOpened] = useState(false);
 
-  const {values, getInputProps, setValues } = useForm({
+  const { values, getInputProps, setValues } = useForm({
     initialValues: {
       id: bookId,
       title: '',
@@ -36,16 +42,17 @@ export default function BookDetails({bookId}:{bookId:number}) {
     },
 
     validate: {
-      title: (val) => (val.length > 0 ? null: 'This field cant be empty'),
-      publicationYear: (val)=> ((val <= new Date().getFullYear()) //   /^-?\d+$/.test(val) && parseInt(val)
-      ? null: 'The field should contain a number no more then current year'),
-      genre: (val)=> (val.length > 0 ? null: 'This field cant be empty'),
+      title: (val) => (val.length > 0 ? null : 'This field cant be empty'),
+      publicationYear: (val) =>
+        val <= new Date().getFullYear() //   /^-?\d+$/.test(val) && parseInt(val)
+          ? null
+          : 'The field should contain a number no more then current year',
+      genre: (val) => (val.length > 0 ? null : 'This field cant be empty'),
     },
   });
 
   useEffect(() => {
-    getBook(bookId)
-    .then((book) => {
+    getBook(bookId).then((book) => {
       setBook(book);
       const initalAuthorName = `${book.author.name} ${book.author.surname}`;
       setAuthorValue(initalAuthorName);
@@ -53,29 +60,28 @@ export default function BookDetails({bookId}:{bookId:number}) {
         title: book.title,
         publicationYear: book.publicationYear,
         genre: book.genre,
-        authorId: book.author.id
+        authorId: book.author.id,
       });
     });
-    getAuthors()
-    .then((authors) => {
+    getAuthors().then((authors) => {
       setAuthors(authors);
     });
   }, [bookId, setValues]);
 
-  async function onSubmit(e: React.FormEvent){
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     try {
       await updateBook(values);
       setOpened(true);
 
-      setTimeout(()=> setOpened(false), 2000);
+      setTimeout(() => setOpened(false), 2000);
     } catch (error) {
       console.error('updateBook failed:', error);
     }
-  };
+  }
 
-  async function onClick(e: React.FormEvent){
+  async function onClick(e: React.FormEvent) {
     e.preventDefault();
 
     try {
@@ -85,73 +91,75 @@ export default function BookDetails({bookId}:{bookId:number}) {
     } catch (error) {
       console.error('deleteBook failed:', error);
     }
-  };
+  }
 
-  if (!authors || !book){
-    return (
-      <Loader color='blue' />
-    )
+  if (!authors || !book) {
+    return <Loader color="blue" />;
   }
 
   const authorsNames = authors.map((x) => `${x.name} ${x.surname}`);
 
   return (
-    <Paper radius='md' p='xl'>
-
+    <Paper radius="md" p="xl">
       <form onSubmit={onSubmit}>
         <Stack w={300}>
-
           <TextInput
             required
-            label='Title'
-            placeholder='Title'
-            radius='md'
+            label="Title"
+            placeholder="Title"
+            radius="md"
             {...getInputProps('title')}
           />
 
           <NumberInput
             required
-            label='Publication year'
-            placeholder='Publication year'
-            radius='md'
+            label="Publication year"
+            placeholder="Publication year"
+            radius="md"
             {...getInputProps('publicationYear')}
           />
 
           <TextInput
             required
-            label='Genre'
-            placeholder='Genre'
-            radius='md'
+            label="Genre"
+            placeholder="Genre"
+            radius="md"
             {...getInputProps('genre')}
           />
 
           <NativeSelect
             required
             value={authorValue}
-            label='Select author'
-            placeholder='Select author'
-            radius='md'
+            label="Select author"
+            placeholder="Select author"
+            radius="md"
             data={authorsNames}
             onChange={(ev) => {
               setAuthorValue(ev.currentTarget.value);
-              setValues({authorId: authors[authorsNames.indexOf(ev.currentTarget.value)].id});
+              setValues({
+                authorId:
+                  authors[authorsNames.indexOf(ev.currentTarget.value)].id,
+              });
             }}
           />
           {opened && (
-            <Notification withCloseButton={false} title='Book was successfully updated' color='green'/>
+            <Notification
+              withCloseButton={false}
+              title="Book was successfully updated"
+              color="green"
+            />
           )}
 
-          <Group justify='space-between' mt='lg'>
-            <Button type='submit' radius='md'>
+          <Group justify="space-between" mt="lg">
+            <Button type="submit" radius="md">
               {upperFirst('Update')}
             </Button>
-            <Button color='red' type='button' radius='md' onClick={onClick}>
+            <Button color="red" type="button" radius="md" onClick={onClick}>
               {upperFirst('Delete')}
             </Button>
           </Group>
-
         </Stack>
       </form>
-
-    </Paper>)
+    </Paper>
+  );
 }

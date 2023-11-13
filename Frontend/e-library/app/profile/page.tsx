@@ -1,13 +1,12 @@
-'use client'
+'use client';
 
 import Profile from '@/components/Profile';
 import { AuthProvider } from '@/modules/auth/AuthProvider';
 
 export default function Page() {
-
-  return(
+  return (
     <AuthProvider>
-      <Profile/>
+      <Profile />
     </AuthProvider>
   );
 }

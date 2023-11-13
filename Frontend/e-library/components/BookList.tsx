@@ -2,20 +2,15 @@
 
 import { Book, getBooks } from '@/services/api';
 import { Table, Anchor, Loader } from '@mantine/core';
-import { useLocalStorage } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
 
 export default function BookList() {
   const [books, setBooks] = useState<Book[]>();
-  const token = localStorage.getItem('jwt');
 
   useEffect(() => {
-    console.log(token);
-    if (token) {
-      getBooks(token).then((books) => {
-        setBooks(books);
-      });
-    }
+    getBooks().then((books) => {
+      setBooks(books);
+    });
   }, []);
 
   if (!books) {
