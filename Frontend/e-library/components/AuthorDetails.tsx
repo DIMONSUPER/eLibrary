@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { Author, deleteAuthor, getAuthor, updateAuthor } from '@/services/api';
 import {
@@ -16,13 +16,12 @@ import { upperFirst } from '@mantine/hooks';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-export default function AuthorDetails({authorId}:{authorId:number}) {
-  
+export default function AuthorDetails({ authorId }: { authorId: number }) {
   const router = useRouter();
   const [opened, setOpened] = useState(false);
   const [author, setAuthor] = useState<Author>();
 
-  const {values, getInputProps, setValues } = useForm<Author>({
+  const { values, getInputProps, setValues } = useForm<Author>({
     initialValues: {
       id: authorId,
       name: '',
@@ -31,14 +30,13 @@ export default function AuthorDetails({authorId}:{authorId:number}) {
     },
 
     validate: {
-      name: (val) => (val.length > 0 ? null: 'This field cant be empty'),
-      surname: (val)=> (val.length > 0 ? null: 'This field cant be empty'),
+      name: (val) => (val.length > 0 ? null : 'This field cant be empty'),
+      surname: (val) => (val.length > 0 ? null : 'This field cant be empty'),
     },
   });
 
   useEffect(() => {
-    getAuthor(authorId)
-    .then((author) => {
+    getAuthor(authorId).then((author) => {
       console.log(author);
       setAuthor(author);
       setValues({
@@ -49,20 +47,20 @@ export default function AuthorDetails({authorId}:{authorId:number}) {
     });
   }, [authorId, setValues]);
 
-  async function onSubmit(e: React.FormEvent){
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     try {
       await updateAuthor(values);
       setOpened(true);
 
-      setTimeout(()=> setOpened(false), 2000);
+      setTimeout(() => setOpened(false), 2000);
     } catch (error) {
       console.error('updateAuthor failed:', error);
     }
-  };
+  }
 
-  async function onClick(e: React.FormEvent){
+  async function onClick(e: React.FormEvent) {
     e.preventDefault();
 
     try {
@@ -72,58 +70,57 @@ export default function AuthorDetails({authorId}:{authorId:number}) {
     } catch (error) {
       console.error('deleteAuthor failed:', error);
     }
-  };
+  }
 
-  if (!author){
-    return (
-      <Loader color='blue' />
-    )
+  if (!author) {
+    return <Loader color="blue" />;
   }
 
   return (
-    <Paper radius='md' p='xl'>
-
+    <Paper radius="md" p="xl">
       <form onSubmit={onSubmit}>
         <Stack w={300}>
-
           <TextInput
             required
-            label='Name'
-            placeholder='Name'
-            radius='md'
+            label="Name"
+            placeholder="Name"
+            radius="md"
             {...getInputProps('name')}
           />
 
           <TextInput
             required
-            label='Surname'
-            placeholder='Surname'
-            radius='md'
+            label="Surname"
+            placeholder="Surname"
+            radius="md"
             {...getInputProps('surname')}
           />
-          
+
           <DatePickerInput
             required
-            label='Birthday'
-            placeholder='Birthday'
+            label="Birthday"
+            placeholder="Birthday"
             {...getInputProps('dateOfBirth')}
           />
 
           {opened && (
-            <Notification withCloseButton={false} title='Author was successfully updated' color='green'/>
+            <Notification
+              withCloseButton={false}
+              title="Author was successfully updated"
+              color="green"
+            />
           )}
 
-          <Group justify='space-between' mt='lg'>
-            <Button type='submit' radius='md'>
-              {upperFirst('Update')}
+          <Group justify="space-between" mt="lg">
+            <Button type="submit" radius="md">
+              Update
             </Button>
-            <Button color='red' type='button' radius='md' onClick={onClick}>
-              {upperFirst('Delete')}
+            <Button color="red" type="button" radius="md" onClick={onClick}>
+              Delete (with all books)
             </Button>
           </Group>
-
         </Stack>
       </form>
-
-    </Paper>)
+    </Paper>
+  );
 }

@@ -16,10 +16,11 @@ import { useRouter } from 'next/navigation';
 
 export default function Profile() {
   const [user, setUser] = useState<UserData>();
-  const [token, , removeValue] = useLocalStorage({ key: 'jwt' });
+  const [token, setValue] = useLocalStorage({ key: 'jwt' });
   const router = useRouter();
 
   useEffect(() => {
+    console.log(token);
     if (token) {
       getUser().then((user) => {
         setUser(user);
@@ -34,7 +35,7 @@ export default function Profile() {
   async function onLogoutClick(e: React.FormEvent) {
     e.preventDefault();
 
-    removeValue();
+    setValue('');
     router.push('/login');
   }
 

@@ -72,7 +72,6 @@ export const getUser = async () : Promise<UserData> => {
         'Authorization': `Bearer ${JSON.parse(localStorage.getItem('jwt') ?? '')}`
       },
     });
-
     if (!response.ok) {
       throw new Error('GetUser failed');
     }

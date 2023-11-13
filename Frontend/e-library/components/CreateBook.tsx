@@ -1,12 +1,9 @@
-'use client';
-
 import {
   Author,
-  Book,
+  BookDTO,
+  createBook,
   deleteBook,
   getAuthors,
-  getBook,
-  updateBook,
 } from '@/services/api';
 import {
   TextInput,
@@ -17,24 +14,21 @@ import {
   NativeSelect,
   NumberInput,
   Loader,
-  Notification,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { upperFirst } from '@mantine/hooks';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-export default function BookDetails({ bookId }: { bookId: number }) {
+export default function CreateBook() {
   const router = useRouter();
 
   const [authors, setAuthors] = useState<Author[]>();
-  const [book, setBook] = useState<Book>();
   const [authorValue, setAuthorValue] = useState('');
-  const [opened, setOpened] = useState(false);
 
-  const { values, getInputProps, setValues } = useForm({
+  const { values, getInputProps, setValues } = useForm<BookDTO>({
     initialValues: {
-      id: bookId,
+      id: 0,
       title: '',
       publicationYear: 2000,
       genre: '',
@@ -54,48 +48,27 @@ export default function BookDetails({ bookId }: { bookId: number }) {
   });
 
   useEffect(() => {
-    getBook(bookId).then((book) => {
-      setBook(book);
-      const initalAuthorName = `${book.author.name} ${book.author.surname}`;
-      setAuthorValue(initalAuthorName);
-      setValues({
-        title: book.title,
-        publicationYear: book.publicationYear,
-        genre: book.genre,
-        authorId: book.author.id,
-      });
-    });
     getAuthors().then((authors) => {
       setAuthors(authors);
+      if (authors && authors.length > 0) {
+        setValues({ authorId: authors[0].id });
+      }
     });
-  }, [bookId, setValues]);
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     try {
-      await updateBook(values);
-      setOpened(true);
-
-      setTimeout(() => setOpened(false), 2000);
-    } catch (error) {
-      console.error('updateBook failed:', error);
-    }
-  }
-
-  async function onClick(e: React.FormEvent) {
-    e.preventDefault();
-
-    try {
-      await deleteBook(values.id);
+      await createBook(values);
 
       router.back();
     } catch (error) {
-      console.error('deleteBook failed:', error);
+      console.error('createBook failed:', error);
     }
   }
 
-  if (!authors || !book) {
+  if (!authors) {
     return <Loader color="blue" />;
   }
 
@@ -144,20 +117,10 @@ export default function BookDetails({ bookId }: { bookId: number }) {
               });
             }}
           />
-          {opened && (
-            <Notification
-              withCloseButton={false}
-              title="Book was successfully updated"
-              color="green"
-            />
-          )}
 
           <Group justify="space-between" mt="lg">
             <Button type="submit" radius="md">
-              {upperFirst('Update')}
-            </Button>
-            <Button color="red" type="button" radius="md" onClick={onClick}>
-              {upperFirst('Delete')}
+              Create
             </Button>
           </Group>
         </Stack>
