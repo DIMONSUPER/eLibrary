@@ -1,7 +1,7 @@
-﻿using BGNet.TestAssignment.Api.Models;
+﻿using BGNet.TestAssignment.DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace BGNet.TestAssignment.Api.Data;
+namespace BGNet.TestAssignment.DataAccess.Contexts;
 
 public class ApplicationContext : DbContext
 {

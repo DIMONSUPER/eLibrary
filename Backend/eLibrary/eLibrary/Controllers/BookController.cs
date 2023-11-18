@@ -1,5 +1,5 @@
-﻿using BGNet.TestAssignment.Api.Data.Repository;
-using BGNet.TestAssignment.Api.Models;
+﻿using BGNet.TestAssignment.BusinessLogic.Services;
+using BGNet.TestAssignment.DataAccess.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,11 +7,12 @@ namespace BGNet.TestAssignment.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class BookController : ControllerBase
 {
-    private readonly IBookRepository _bookRepository;
+    private readonly IBookService _bookRepository;
 
-    public BookController(IBookRepository bookRepository)
+    public BookController(IBookService bookRepository)
     {
         _bookRepository = bookRepository;
     }
@@ -19,7 +20,6 @@ public class BookController : ControllerBase
     #region -- APIs implementation --
 
     [HttpGet]
-    [Authorize]
     public IActionResult GetList()
     {
         return Ok(_bookRepository.GetAll());

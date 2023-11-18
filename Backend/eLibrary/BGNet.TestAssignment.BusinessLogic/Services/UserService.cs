@@ -1,12 +1,13 @@
-﻿using BGNet.TestAssignment.Api.Models;
+﻿using BGNet.TestAssignment.DataAccess.Entities;
+using BGNet.TestAssignment.DataAccess.Repository;
 
-namespace BGNet.TestAssignment.Api.Data.Repository;
+namespace BGNet.TestAssignment.BusinessLogic.Services;
 
-public class UserRepository : IUserRepository
+public class UserService : IUserService
 {
     private readonly IRepository _repository;
 
-    public UserRepository(IRepository repository)
+    public UserService(IRepository repository)
     {
         _repository = repository;
     }
@@ -29,4 +30,11 @@ public class UserRepository : IUserRepository
     }
 
     #endregion
+}
+
+public interface IUserService
+{
+    User Create(User user);
+    User? GetByUsername(string username);
+    User? GetById(int id);
 }

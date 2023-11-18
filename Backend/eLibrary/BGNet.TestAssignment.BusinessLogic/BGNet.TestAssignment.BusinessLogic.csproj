@@ -5,5 +5,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Validators\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BGNet.TestAssignment.DataAccess\BGNet.TestAssignment.DataAccess.csproj" />
+  </ItemGroup>
 	
 </Project>

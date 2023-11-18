@@ -1,8 +1,8 @@
-﻿using BGNet.TestAssignment.Api.Data;
-using BGNet.TestAssignment.Api.Models;
+﻿using BGNet.TestAssignment.DataAccess.Contexts;
+using BGNet.TestAssignment.DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace BGNet.TestAssignment.Api.Data.Repository;
+namespace BGNet.TestAssignment.DataAccess.Repository;
 
 public class Repository : IRepository
 {
@@ -28,7 +28,7 @@ public class Repository : IRepository
         _applicationContext.SaveChanges();
     }
 
-    public T Find<T>(Func<T, bool> predicate) where T : class, IEntity
+    public T? Find<T>(Func<T, bool> predicate) where T : class, IEntity
     {
         return _applicationContext.Set<T>().FirstOrDefault(predicate);
     }
@@ -48,7 +48,7 @@ public class Repository : IRepository
         return query;
     }
 
-    public T GetById<T>(int id, params string[] includeProperties) where T : class, IEntity
+    public T? GetById<T>(int id, params string[] includeProperties) where T : class, IEntity
     {
         return GetAll<T>(includeProperties).FirstOrDefault(x => x.Id == id);
     }

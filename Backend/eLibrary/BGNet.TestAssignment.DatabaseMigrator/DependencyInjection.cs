@@ -1,21 +1,26 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BGNet.TestAssignment.DataAccess.Contexts;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BGNet.TestAssignment.DatabaseMigrator;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddMigrations<T>(this IServiceCollection services, string connectionString) where T : DbContext
+    public static IServiceCollection AddMigrations(this IServiceCollection services, string? connectionString)
     {
-        services.AddDbContext<T>(opt => opt.UseNpgsql(connectionString));
+        services.AddDbContext<ApplicationContext>(opt => opt.UseNpgsql(connectionString));
 
         try 
         {
-                
+            using var serviceProvider = services.BuildServiceProvider();
+
+            var applicationContext = serviceProvider.GetRequiredService<ApplicationContext>();
+
+            applicationContext.Database.Migrate();
         }
         catch (Exception ex) 
         {
-
+            System.Diagnostics.Debug.WriteLine($"{nameof(AddMigrations)}: {ex.Message}");
         }
 
         return services;

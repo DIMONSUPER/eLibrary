@@ -1,12 +1,13 @@
-﻿using BGNet.TestAssignment.Api.Models;
+﻿using BGNet.TestAssignment.DataAccess.Entities;
+using BGNet.TestAssignment.DataAccess.Repository;
 
-namespace BGNet.TestAssignment.Api.Data.Repository;
+namespace BGNet.TestAssignment.BusinessLogic.Services;
 
-public class BookRepository : IBookRepository
+public class BookService : IBookService
 {
     private readonly IRepository _repository;
 
-    public BookRepository(IRepository repository)
+    public BookService(IRepository repository)
     {
         _repository = repository;
     }
@@ -33,7 +34,7 @@ public class BookRepository : IBookRepository
         return _repository.GetAll<Book>(nameof(Book.Author));
     }
 
-    public Book GetById(int id)
+    public Book? GetById(int id)
     {
         return _repository.GetById<Book>(id, nameof(Book.Author));
     }
@@ -44,4 +45,13 @@ public class BookRepository : IBookRepository
     }
 
     #endregion
+}
+
+public interface IBookService
+{
+    Book Create(Book book);
+    IEnumerable<Book> GetAll();
+    void Update(Book book);
+    Book? GetById(int id);
+    void Delete(int id);
 }

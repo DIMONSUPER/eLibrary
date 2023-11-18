@@ -1,17 +1,18 @@
-﻿using BGNet.TestAssignment.Api.Data.Repository;
-using BGNet.TestAssignment.Api.Helpers;
-using BGNet.TestAssignment.Api.Models;
+﻿using BGNet.TestAssignment.BusinessLogic.Services;
+using BGNet.TestAssignment.DataAccess.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BGNet.TestAssignment.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthorController : BaseController
+[Authorize]
+public class AuthorController : ControllerBase
 {
-    private readonly IAuthorRepository _authorRepository;
+    private readonly IAuthorService _authorRepository;
 
-    public AuthorController(IAuthorRepository authorRepository, IJwtService jwtService) : base(jwtService)
+    public AuthorController(IAuthorService authorRepository)
     {
         _authorRepository = authorRepository;
     }
@@ -21,46 +22,37 @@ public class AuthorController : BaseController
     [HttpGet]
     public IActionResult GetList()
     {
-        return CheckAuthorization(() => Ok(_authorRepository.GetAll()));
+        return Ok(_authorRepository.GetAll());
     }
 
     [HttpGet("{id:int}")]
     public IActionResult GetAuthor(int id)
     {
-        return CheckAuthorization(() => Ok(_authorRepository.GetById(id)));
+        return Ok(_authorRepository.GetById(id));
     }
 
     [HttpPost]
     public IActionResult Create(Author author)
     {
-        return CheckAuthorization(() =>
-        {
-            var createdAuthor = _authorRepository.Create(author);
+        var createdAuthor = _authorRepository.Create(author);
 
-            return Created("Success", createdAuthor.Id);
-        });
+        return Created("Success", createdAuthor.Id);
     }
 
     [HttpPut]
     public IActionResult Update(Author author)
     {
-        return CheckAuthorization(() =>
-        {
-            _authorRepository.Update(author);
+        _authorRepository.Update(author);
 
-            return Ok("Success");
-        });
+        return Ok("Success");
     }
 
     [HttpDelete]
     public IActionResult Delete(int id)
     {
-        return CheckAuthorization(() =>
-        {
-            _authorRepository.Delete(id);
+        _authorRepository.Delete(id);
 
-            return Ok("Success");
-        });
+        return Ok("Success");
     }
 
     #endregion

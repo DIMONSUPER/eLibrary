@@ -1,6 +1,6 @@
 ﻿namespace BGNet.TestAssignment.DataAccess
 {
-    public class Class1
+    public class DependencyInjection
     {
 
     }

@@ -1,22 +1,24 @@
-﻿using BGNet.TestAssignment.Api.Data.Repository;
-using BGNet.TestAssignment.Api.Dtos;
-using BGNet.TestAssignment.Api.Models;
-using BGNet.TestAssignment.DataAccess.Jwt;
+﻿using BGNet.TestAssignment.Api.Dtos;
+using BGNet.TestAssignment.BusinessLogic.Services;
+using BGNet.TestAssignment.DataAccess.Entities;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
+using System.Security.Claims;
 
 namespace BGNet.TestAssignment.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController(IUserRepository userRepository, IOptions<JwtOptions> jwtOptions) : ControllerBase
+public class AuthController : ControllerBase
 {
-    private readonly IUserRepository _userRepository = userRepository;
-    private readonly IOptions<JwtOptions> _jwtOptions = jwtOptions;
+    private readonly IUserService _userRepository;
+
+    public AuthController(IUserService userRepository)
+    {
+        _userRepository = userRepository;
+    }
 
     #region -- APIs implementation --
 
@@ -36,8 +38,8 @@ public class AuthController(IUserRepository userRepository, IOptions<JwtOptions>
         return Created("Success", _userRepository.Create(user));
     }
 
-    [HttpPost(nameof(Login))]
-    public IActionResult Login(LoginDto loginDto)
+    [HttpPost("login")]
+    public async Task<IActionResult> LoginAsync(LoginDto loginDto)
     {
         var user = _userRepository.GetByUsername(loginDto.Username);
 
@@ -45,28 +47,20 @@ public class AuthController(IUserRepository userRepository, IOptions<JwtOptions>
 
         if (user is not null && BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))
         {
-            var now = DateTime.UtcNow;
-            var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtOptions.Value.SecureKey));
-
-            var jwt = new JwtSecurityToken(
-                issuer: _jwtOptions.Value.Issuer,
-                notBefore: now,
-                expires: now.Add(TimeSpan.FromDays(_jwtOptions.Value.ExpiresDays)),
-                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
-
-            var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
-
-            Response.Cookies.Append("jwt", encodedJwt, new CookieOptions { HttpOnly = true });
-
-            result = Ok(new 
+            var claims = new List<Claim> 
             {
-                access_token = encodedJwt,
-                user_id = user.Id,
-            });
+                new(ClaimTypes.Name, user.Username),
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new(claimsIdentity));
+
+            result = Ok("Success");
         }
         else
         {
-            result = BadRequest(new { message = "Invalid Credentials" });
+            result = BadRequest(new { message = "Invalid credentials" });
         }
 
         return result;
@@ -76,37 +70,17 @@ public class AuthController(IUserRepository userRepository, IOptions<JwtOptions>
     [Authorize]
     public IActionResult GetUser()
     {
-        try
-        {
-            var jwt = GetJwtToken();
+        var user = _userRepository.GetByUsername(User.Identity!.Name!);
 
-            var userId = int.Parse(token.Issuer);
-
-            var user = _userRepository.GetById(userId);
-
-            return Ok(user);
-        }
-        catch (Exception ex)
-        {
-            return Unauthorized();
-        }
+        return Ok(user);
     }
 
-    [HttpPost(nameof(Logout))]
-    public IActionResult Logout()
+    [HttpPost("logout")]
+    public async Task<IActionResult> LogoutAsync()
     {
-        Response.Cookies.Delete("jwt");
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-        return Ok(new { message = "success" });
-    }
-
-    #endregion
-
-    #region -- Private helpers --
-
-    private string GetJwtToken()
-    {
-        return Request.Headers.Authorization[0]?.Split(' ')[1];
+        return Ok("Success");
     }
 
     #endregion

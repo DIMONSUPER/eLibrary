@@ -1,4 +1,4 @@
-﻿namespace BGNet.TestAssignment.Api.Models;
+﻿namespace BGNet.TestAssignment.DataAccess.Entities;
 
 public class Book : IEntity
 {

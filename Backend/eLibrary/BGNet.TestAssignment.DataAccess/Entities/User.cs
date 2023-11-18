@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace BGNet.TestAssignment.Api.Models;
+namespace BGNet.TestAssignment.DataAccess.Entities;
 
 public class User : IEntity
 {

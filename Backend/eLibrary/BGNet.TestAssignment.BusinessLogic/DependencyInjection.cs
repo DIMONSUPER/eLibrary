@@ -1,6 +1,6 @@
 ﻿namespace BGNet.TestAssignment.BusinessLogic
 {
-    public class Class1
+    public class DependencyInjection
     {
 
     }
