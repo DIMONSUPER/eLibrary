@@ -1,7 +1,10 @@
-using eLibrary.Data;
-using eLibrary.Data.Repository;
-using eLibrary.Helpers;
+using BGNet.TestAssignment.Api.Data;
+using BGNet.TestAssignment.Api.Data.Repository;
+using BGNet.TestAssignment.DataAccess.Jwt;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +24,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseCors(options => options
     .WithOrigins("http://localhost:3000")
     .AllowAnyHeader()
@@ -30,13 +36,17 @@ app.UseCors(options => options
 
 app.MapDefaultControllerRoute();
 
-app.MapFallbackToFile("index.html");
 app.Run();
 
 void ConfigureServices(IServiceCollection services)
 {
+    services.Configure<JwtOptions>(
+        builder.Configuration.GetSection(JwtOptions.Jwt));
+
     services.AddCors();
+
     services.AddDbContext<ApplicationContext>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+
     services.AddControllersWithViews()
         .AddNewtonsoftJson(options =>
         options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
@@ -45,5 +55,25 @@ void ConfigureServices(IServiceCollection services)
     services.AddScoped<IUserRepository, UserRepository>();
     services.AddScoped<IAuthorRepository, AuthorRepository>();
     services.AddScoped<IBookRepository, BookRepository>();
-    services.AddScoped<IJwtService, JwtService>();
+
+    services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var jwtOptions = builder.Configuration.GetSection(JwtOptions.Jwt).Get<JwtOptions>()!;
+
+        options.Authority = jwtOptions.Authority;
+
+        options.TokenValidationParameters =
+          new TokenValidationParameters
+          {
+              ValidateAudience = false,
+              ValidateLifetime = true,
+              ValidateIssuer = true,
+              ValidIssuer = jwtOptions.Issuer,
+              ValidateIssuerSigningKey = true,
+              IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtOptions.SecureKey)),
+          };
+
+           options.RequireHttpsMetadata = false;
+    });
 }

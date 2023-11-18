@@ -1,7 +1,7 @@
-﻿using eLibrary.Models;
+﻿using BGNet.TestAssignment.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace eLibrary.Data;
+namespace BGNet.TestAssignment.Api.Data;
 
 public class ApplicationContext : DbContext
 {

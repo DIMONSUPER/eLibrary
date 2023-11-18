@@ -1,4 +1,4 @@
-﻿namespace eLibrary.Models;
+﻿namespace BGNet.TestAssignment.Api.Models;
 
 public interface IEntity
 {

@@ -1,6 +1,6 @@
-﻿using eLibrary.Models;
+﻿using BGNet.TestAssignment.Api.Models;
 
-namespace eLibrary.Data.Repository;
+namespace BGNet.TestAssignment.Api.Data.Repository;
 
 public class AuthorRepository : IAuthorRepository
 {

@@ -1,4 +1,4 @@
-﻿namespace eLibrary.Dtos;
+﻿namespace BGNet.TestAssignment.Api.Dtos;
 
 public class LoginDto
 {

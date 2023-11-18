@@ -1,23 +1,22 @@
-﻿using eLibrary.Data.Repository;
-using eLibrary.Dtos;
-using eLibrary.Helpers;
-using eLibrary.Models;
+﻿using BGNet.TestAssignment.Api.Data.Repository;
+using BGNet.TestAssignment.Api.Dtos;
+using BGNet.TestAssignment.Api.Models;
+using BGNet.TestAssignment.DataAccess.Jwt;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 
-namespace eLibrary.Controllers;
+namespace BGNet.TestAssignment.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController(IUserRepository userRepository, IOptions<JwtOptions> jwtOptions) : ControllerBase
 {
-    private readonly IUserRepository _userRepository;
-    private readonly IJwtService _jwtService;
-
-    public AuthController(IUserRepository userRepository, IJwtService jwtService)
-    {
-        _userRepository = userRepository;
-        _jwtService = jwtService;
-    }
+    private readonly IUserRepository _userRepository = userRepository;
+    private readonly IOptions<JwtOptions> _jwtOptions = jwtOptions;
 
     #region -- APIs implementation --
 
@@ -46,11 +45,24 @@ public class AuthController : ControllerBase
 
         if (user is not null && BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))
         {
-            var jwt = _jwtService.Generate(user.Id);
+            var now = DateTime.UtcNow;
+            var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtOptions.Value.SecureKey));
 
-            Response.Cookies.Append(nameof(jwt), jwt, new CookieOptions { HttpOnly = true });
+            var jwt = new JwtSecurityToken(
+                issuer: _jwtOptions.Value.Issuer,
+                notBefore: now,
+                expires: now.Add(TimeSpan.FromDays(_jwtOptions.Value.ExpiresDays)),
+                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
 
-            result = Ok(new { jwt });
+            var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
+
+            Response.Cookies.Append("jwt", encodedJwt, new CookieOptions { HttpOnly = true });
+
+            result = Ok(new 
+            {
+                access_token = encodedJwt,
+                user_id = user.Id,
+            });
         }
         else
         {
@@ -61,13 +73,12 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("user")]
+    [Authorize]
     public IActionResult GetUser()
     {
         try
         {
             var jwt = GetJwtToken();
-
-            var token = _jwtService.Verify(jwt);
 
             var userId = int.Parse(token.Issuer);
 

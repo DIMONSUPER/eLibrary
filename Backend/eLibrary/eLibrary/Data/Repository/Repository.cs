@@ -1,7 +1,8 @@
-﻿using eLibrary.Models;
+﻿using BGNet.TestAssignment.Api.Data;
+using BGNet.TestAssignment.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace eLibrary.Data.Repository;
+namespace BGNet.TestAssignment.Api.Data.Repository;
 
 public class Repository : IRepository
 {

@@ -1,9 +1,9 @@
-﻿using eLibrary.Data.Repository;
-using eLibrary.Helpers;
-using eLibrary.Models;
+﻿using BGNet.TestAssignment.Api.Data.Repository;
+using BGNet.TestAssignment.Api.Helpers;
+using BGNet.TestAssignment.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace eLibrary.Controllers;
+namespace BGNet.TestAssignment.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -33,7 +33,7 @@ public class AuthorController : BaseController
     [HttpPost]
     public IActionResult Create(Author author)
     {
-        return CheckAuthorization(() => 
+        return CheckAuthorization(() =>
         {
             var createdAuthor = _authorRepository.Create(author);
 
@@ -53,7 +53,7 @@ public class AuthorController : BaseController
     }
 
     [HttpDelete]
-    public IActionResult Delete(int id) 
+    public IActionResult Delete(int id)
     {
         return CheckAuthorization(() =>
         {
