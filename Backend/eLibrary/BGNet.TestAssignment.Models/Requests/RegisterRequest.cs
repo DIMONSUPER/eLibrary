@@ -1,6 +1,8 @@
-﻿namespace BGNet.TestAssignment.Api.Dtos;
+﻿using System.Text.Json.Serialization;
 
-public class RegisterDto
+namespace BGNet.TestAssignment.Models.Requests;
+
+public class RegisterRequest
 {
     public string Password { get; set; } = null!;
     public string Username { get; set; } = null!;

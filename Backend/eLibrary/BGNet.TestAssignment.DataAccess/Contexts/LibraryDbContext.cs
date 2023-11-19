@@ -1,11 +1,12 @@
 ﻿using BGNet.TestAssignment.DataAccess.Entities;
+using BGNet.TestAssignment.DataAccess.Entities.Configurations;
 using Microsoft.EntityFrameworkCore;
 
 namespace BGNet.TestAssignment.DataAccess.Contexts;
 
-public class ApplicationContext : DbContext
+public class LibraryDbContext : DbContext
 {
-    public ApplicationContext(DbContextOptions options) : base(options)
+    public LibraryDbContext(DbContextOptions options) : base(options)
     {
     }
 
@@ -21,12 +22,9 @@ public class ApplicationContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<User>(entity => { entity.HasIndex(e => e.Username).IsUnique(); });
-
-        modelBuilder.Entity<Book>()
-            .HasOne(b => b.Author)
-            .WithMany(a => a.Books)
-            .HasForeignKey(b => b.AuthorId);
+        modelBuilder.ApplyConfiguration(new UserEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new AuthorEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new BookEntityConfiguration());
     }
 
     #endregion

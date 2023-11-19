@@ -8,5 +8,5 @@ public class Book : IEntity
     public string Genre { get; set; } = null!;
 
     public Author? Author { get; set; }
-    public int? AuthorId { get; set; }
+    public int AuthorId { get; set; }
 }

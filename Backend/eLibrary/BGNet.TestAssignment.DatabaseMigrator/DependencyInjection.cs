@@ -8,13 +8,13 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddMigrations(this IServiceCollection services, string? connectionString)
     {
-        services.AddDbContext<ApplicationContext>(opt => opt.UseNpgsql(connectionString));
+        services.AddDbContext<LibraryDbContext>(opt => opt.UseNpgsql(connectionString));
 
         try 
         {
             using var serviceProvider = services.BuildServiceProvider();
 
-            var applicationContext = serviceProvider.GetRequiredService<ApplicationContext>();
+            var applicationContext = serviceProvider.GetRequiredService<LibraryDbContext>();
 
             applicationContext.Database.Migrate();
         }

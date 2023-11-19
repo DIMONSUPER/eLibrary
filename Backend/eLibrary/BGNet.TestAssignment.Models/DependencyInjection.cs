@@ -1,6 +1,6 @@
 ﻿namespace BGNet.TestAssignment.Models
 {
-    public class Class1
+    public class DependencyInjection
     {
 
     }

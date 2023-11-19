@@ -6,9 +6,9 @@ namespace BGNet.TestAssignment.DataAccess.Repository;
 
 public class Repository : IRepository
 {
-    protected readonly ApplicationContext _applicationContext;
+    protected readonly LibraryDbContext _applicationContext;
 
-    public Repository(ApplicationContext context)
+    public Repository(LibraryDbContext context)
     {
         _applicationContext = context;
     }

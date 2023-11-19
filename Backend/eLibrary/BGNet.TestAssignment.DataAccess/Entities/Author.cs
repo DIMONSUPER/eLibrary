@@ -7,5 +7,5 @@ public class Author : IEntity
     public string Surname { get; set; } = null!;
     public DateTime DateOfBirth { get; set; }
 
-    public ICollection<Book>? Books { get; set; }
+    public ICollection<Book> Books { get; set; } = new List<Book>();
 }

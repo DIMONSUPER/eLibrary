@@ -1,6 +1,6 @@
-﻿using BGNet.TestAssignment.Api.Dtos;
-using BGNet.TestAssignment.BusinessLogic.Services;
+﻿using BGNet.TestAssignment.BusinessLogic.Services;
 using BGNet.TestAssignment.DataAccess.Entities;
+using BGNet.TestAssignment.Models.Requests;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -23,29 +23,29 @@ public class AuthController : ControllerBase
     #region -- APIs implementation --
 
     [HttpPost(nameof(Register))]
-    public IActionResult Register(RegisterDto registerDto)
+    public IActionResult Register(RegisterRequest registerRequest)
     {
         var user = new User
         {
-            Username = registerDto.Username,
-            Password = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
-            Surname = registerDto.Surname,
-            Address = registerDto.Address,
-            DateOfBirth = registerDto.DateOfBirth,
-            Name = registerDto.Name,
+            Username = registerRequest.Username,
+            Password = BCrypt.Net.BCrypt.HashPassword(registerRequest.Password),
+            Surname = registerRequest.Surname,
+            Address = registerRequest.Address,
+            DateOfBirth = registerRequest.DateOfBirth,
+            Name = registerRequest.Name,
         };
 
         return Created("Success", _userRepository.Create(user));
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> LoginAsync(LoginDto loginDto)
+    public async Task<IActionResult> LoginAsync(LoginRequest loginRequest)
     {
-        var user = _userRepository.GetByUsername(loginDto.Username);
+        var user = _userRepository.GetByUsername(loginRequest.Username);
 
         IActionResult result;
 
-        if (user is not null && BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))
+        if (user is not null && BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
         {
             var claims = new List<Claim> 
             {

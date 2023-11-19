@@ -31,12 +31,12 @@ public class AuthorService : IAuthorService
 
     public IEnumerable<Author> GetAll()
     {
-        return _repository.GetAll<Author>(nameof(Author.Books));
+        return _repository.GetAll<Author>();
     }
 
     public Author? GetById(int id)
     {
-        return _repository.GetById<Author>(id, nameof(Author.Books));
+        return _repository.GetById<Author>(id);
     }
 
     public void Update(Author author)

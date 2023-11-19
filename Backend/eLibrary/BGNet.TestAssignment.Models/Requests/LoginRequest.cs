@@ -1,6 +1,6 @@
-﻿namespace BGNet.TestAssignment.Api.Dtos;
+﻿namespace BGNet.TestAssignment.Models.Requests;
 
-public class LoginDto
+public class LoginRequest
 {
     public string Username { get; set; } = null!;
     public string Password { get; set; } = null!;
