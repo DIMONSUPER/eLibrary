@@ -1,8 +1,9 @@
-﻿using BGNet.TestAssignment.BusinessLogic.Services;
-using BGNet.TestAssignment.DataAccess.Repository;
+﻿using BGNet.TestAssignment.BusinessLogic;
 using BGNet.TestAssignment.DatabaseMigrator;
+using BGNet.TestAssignment.Common;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication;
 
 namespace BGNet.TestAssignment.Api;
 
@@ -24,22 +25,18 @@ public class Startup
         services.AddMigrations(_configuration.GetConnectionString("Default"));
 
         services.AddControllersWithViews()
-            .AddNewtonsoftJson(options =>
-            options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+            .AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
-        services.AddScoped<IRepository, Repository>();
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IAuthorService, AuthorService>();
-        services.AddScoped<IBookService, BookService>();
+        services.RegisterServicesAndValidators();
 
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
             {
-                options.ExpireTimeSpan = TimeSpan.FromDays(1);
+                options.ExpireTimeSpan = TimeSpan.FromHours(1);
                 options.SlidingExpiration = true;
-                options.AccessDeniedPath = "/login ";
+                options.Events.OnRedirectToLogin = OnRedirectToLogin;
             });
-    }
+    } 
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
@@ -56,6 +53,8 @@ public class Startup
         app.UseAuthentication();
         app.UseAuthorization();
 
+        app.UseExceptionHandlerMiddleware();
+
         app.UseCors(options => options
             .WithOrigins("http://localhost:3000")
             .AllowAnyHeader()
@@ -64,6 +63,17 @@ public class Startup
             .AllowCredentials());
 
         app.UseEndpoints(endpoints => endpoints.MapDefaultControllerRoute());
+    }
+
+    #endregion
+
+    #region -- Private helpers --
+
+    private Task OnRedirectToLogin(RedirectContext<CookieAuthenticationOptions> context)
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+
+        return context.Response.WriteAsync("You should be authorized to view this page");
     }
 
     #endregion

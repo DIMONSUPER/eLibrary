@@ -1,6 +1,6 @@
 ﻿namespace BGNet.TestAssignment.Models.Dtos;
 
-public class CreateUserDto
+public class FullUserDto
 {
     public string Password { get; set; } = null!;
     public string Username { get; set; } = null!;

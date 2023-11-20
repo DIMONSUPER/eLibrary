@@ -16,16 +16,16 @@ public class UserService : IUserService
 
     #region -- IUserRepository implementation --
 
-    public UserDto Create(CreateUserDto createUserDto)
+    public UserDto Create(FullUserDto createUserDto)
     {
         var user = createUserDto.Adapt<User>();
 
         return _repository.Create(user).Adapt<UserDto>();
     }
 
-    public UserDto? GetByUsername(string username)
+    public FullUserDto? GetByUsername(string username)
     {
-        return _repository.Find<User>(x => x.Username == username).Adapt<UserDto>();
+        return _repository.Find<User>(x => x.Username == username).Adapt<FullUserDto>();
     }
 
     public UserDto? GetById(int id)
@@ -38,7 +38,7 @@ public class UserService : IUserService
 
 public interface IUserService
 {
-    UserDto Create(CreateUserDto createUserDto);
-    UserDto? GetByUsername(string username);
+    UserDto Create(FullUserDto fullUserDto);
+    FullUserDto? GetByUsername(string username);
     UserDto? GetById(int id);
 }

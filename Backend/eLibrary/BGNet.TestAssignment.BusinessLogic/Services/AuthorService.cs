@@ -25,7 +25,7 @@ public class AuthorService : IAuthorService
 
     public void Delete(int id)
     {
-        var author = _repository.GetById<Author>(id);
+        var author = _repository.GetNoTrackingQueryable<Author>().FirstOrDefault(x => x.Id == id);
 
         if (author is not null)
         {
@@ -35,12 +35,12 @@ public class AuthorService : IAuthorService
 
     public IEnumerable<AuthorDto> GetAll()
     {
-        return _repository.GetAll<Author>().Adapt<IEnumerable<AuthorDto>>();
+        return _repository.GetNoTrackingQueryable<Author>().Adapt<IEnumerable<AuthorDto>>();
     }
 
     public AuthorDto? GetById(int id)
     {
-        return _repository.GetById<Author>(id).Adapt<AuthorDto>();
+        return _repository.GetNoTrackingQueryable<Author>().FirstOrDefault(x => x.Id == id).Adapt<AuthorDto>();
     }
 
     public void Update(AuthorDto authorDto)

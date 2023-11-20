@@ -38,7 +38,7 @@ public class AuthorController : ControllerBase
         var createdAuthor = _authorRepository.Create(author);
 
         return Created("Success", createdAuthor.Id);
-    }
+    }   
 
     [HttpPut]
     public IActionResult Update(AuthorDto author)

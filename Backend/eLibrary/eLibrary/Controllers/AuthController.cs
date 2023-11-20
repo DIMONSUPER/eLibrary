@@ -24,15 +24,15 @@ public class AuthController : ControllerBase
     #region -- APIs implementation --
 
     [HttpPost(nameof(Register))]
-    public IActionResult Register(CreateUserDto createUserDto)
+    public IActionResult Register(FullUserDto createUserDto)
     {
         createUserDto.Password = BCrypt.Net.BCrypt.HashPassword(createUserDto.Password);
 
         return Created("Success", _userRepository.Create(createUserDto));
     }
 
-    [HttpPost("login")]
-    public async Task<IActionResult> LoginAsync(Models.Requests.LoginRequest loginRequest)
+    [HttpPost(nameof(Login))]
+    public async Task<IActionResult> Login(Models.Requests.LoginRequest loginRequest)
     {
         var user = _userRepository.GetByUsername(loginRequest.Username);
 
@@ -53,7 +53,7 @@ public class AuthController : ControllerBase
         }
         else
         {
-            result = BadRequest(new { message = "Invalid credentials" });
+            result = Unauthorized(new { message = "Invalid credentials" });
         }
 
         return result;
@@ -68,8 +68,8 @@ public class AuthController : ControllerBase
         return Ok(user);
     }
 
-    [HttpPost("logout")]
-    public async Task<IActionResult> LogoutAsync()
+    [HttpPost(nameof(Logout))]
+    public async Task<IActionResult> Logout()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
