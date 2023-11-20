@@ -1,5 +1,7 @@
 ﻿using BGNet.TestAssignment.DataAccess.Entities;
 using BGNet.TestAssignment.DataAccess.Repository;
+using BGNet.TestAssignment.Models.Dtos;
+using Mapster;
 
 namespace BGNet.TestAssignment.BusinessLogic.Services;
 
@@ -14,9 +16,13 @@ public class BookService : IBookService
 
     #region -- IBookRepository implementation --
 
-    public Book Create(Book book)
+    public BookDto Create(BookDto bookDto)
     {
-        return _repository.Create(book);
+        var newBook = bookDto.Adapt<Book>();
+
+        var createdBook = _repository.Create(newBook);
+
+        return createdBook.Adapt<BookDto>();
     }
 
     public void Delete(int id)
@@ -29,18 +35,20 @@ public class BookService : IBookService
         }
     }
 
-    public IEnumerable<Book> GetAll()
+    public IEnumerable<BookDto> GetAll()
     {
-        return _repository.GetAll<Book>(nameof(Book.Author));
+        return _repository.GetAll<Book>(nameof(Book.Author)).Adapt<IEnumerable<BookDto>>();
     }
 
-    public Book? GetById(int id)
+    public BookDto? GetById(int id)
     {
-        return _repository.GetById<Book>(id, nameof(Book.Author));
+        return _repository.GetById<Book>(id, nameof(Book.Author)).Adapt<BookDto>();
     }
 
-    public void Update(Book book)
+    public void Update(BookDto bookDto)
     {
+        var book = bookDto.Adapt<Book>();
+
         _repository.Update(book);
     }
 
@@ -49,9 +57,9 @@ public class BookService : IBookService
 
 public interface IBookService
 {
-    Book Create(Book book);
-    IEnumerable<Book> GetAll();
-    void Update(Book book);
-    Book? GetById(int id);
+    BookDto Create(BookDto bookDto);
+    IEnumerable<BookDto> GetAll();
+    void Update(BookDto bookDto);
+    BookDto? GetById(int id);
     void Delete(int id);
 }

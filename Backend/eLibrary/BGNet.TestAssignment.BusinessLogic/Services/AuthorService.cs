@@ -1,5 +1,7 @@
 ﻿using BGNet.TestAssignment.DataAccess.Entities;
 using BGNet.TestAssignment.DataAccess.Repository;
+using BGNet.TestAssignment.Models.Dtos;
+using Mapster;
 
 namespace BGNet.TestAssignment.BusinessLogic.Services;
 
@@ -14,9 +16,11 @@ public class AuthorService : IAuthorService
 
     #region -- IAuthorRepository implementation --
 
-    public Author Create(Author author)
+    public AuthorDto Create(AuthorDto authorDto)
     {
-        return _repository.Create(author);
+        var author = authorDto.Adapt<Author>();
+
+        return _repository.Create(author).Adapt<AuthorDto>();
     }
 
     public void Delete(int id)
@@ -29,18 +33,20 @@ public class AuthorService : IAuthorService
         }
     }
 
-    public IEnumerable<Author> GetAll()
+    public IEnumerable<AuthorDto> GetAll()
     {
-        return _repository.GetAll<Author>();
+        return _repository.GetAll<Author>().Adapt<IEnumerable<AuthorDto>>();
     }
 
-    public Author? GetById(int id)
+    public AuthorDto? GetById(int id)
     {
-        return _repository.GetById<Author>(id);
+        return _repository.GetById<Author>(id).Adapt<AuthorDto>();
     }
 
-    public void Update(Author author)
+    public void Update(AuthorDto authorDto)
     {
+        var author = authorDto.Adapt<Author>();
+
         _repository.Update(author);
     }
 
@@ -49,9 +55,9 @@ public class AuthorService : IAuthorService
 
 public interface IAuthorService
 {
-    Author Create(Author author);
-    IEnumerable<Author> GetAll();
-    void Update(Author author);
-    Author? GetById(int id);
+    AuthorDto Create(AuthorDto authorDto);
+    IEnumerable<AuthorDto> GetAll();
+    void Update(AuthorDto authorDto);
+    AuthorDto? GetById(int id);
     void Delete(int id);
 }

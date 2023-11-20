@@ -1,5 +1,6 @@
 ﻿using BGNet.TestAssignment.BusinessLogic.Services;
 using BGNet.TestAssignment.DataAccess.Entities;
+using BGNet.TestAssignment.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,7 +33,7 @@ public class BookController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult Create(Book book)
+    public IActionResult Create(BookDto book)
     {
         var createdBook = _bookRepository.Create(book);
 
@@ -40,7 +41,7 @@ public class BookController : ControllerBase
     }
 
     [HttpPut]
-    public IActionResult Update(Book book)
+    public IActionResult Update(BookDto book)
     {
         _bookRepository.Update(book);
 

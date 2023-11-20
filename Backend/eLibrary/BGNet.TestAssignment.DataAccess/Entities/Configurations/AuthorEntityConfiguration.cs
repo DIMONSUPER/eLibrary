@@ -10,8 +10,8 @@ public class AuthorEntityConfiguration : IEntityTypeConfiguration<Author>
     public void Configure(EntityTypeBuilder<Author> builder)
     {
         builder.HasKey(x => x.Id);
-        builder.Property(x => x.Name).IsRequired();
-        builder.Property(x => x.Surname).IsRequired();
+        builder.Property(x => x.FirstName).IsRequired();
+        builder.Property(x => x.LastName).IsRequired();
         builder.Property(x => x.DateOfBirth).IsRequired();
     }
 

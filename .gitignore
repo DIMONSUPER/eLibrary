@@ -117,3 +117,6 @@ next-env.d.ts
 *.vsidx
 *.bin
 *.v2
+Backend/eLibrary/.vs/BGLibrary/DesignTimeBuild/.dtbcache.v2
+Backend/eLibrary/.vs/ProjectEvaluation/bglibrary.metadata.v7.bin
+Backend/eLibrary/.vs/ProjectEvaluation/bglibrary.projects.v7.bin

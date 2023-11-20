@@ -1,9 +1,10 @@
 ﻿using BGNet.TestAssignment.BusinessLogic.Services;
-using BGNet.TestAssignment.DataAccess.Entities;
+using BGNet.TestAssignment.Models.Dtos;
 using BGNet.TestAssignment.Models.Requests;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -23,23 +24,15 @@ public class AuthController : ControllerBase
     #region -- APIs implementation --
 
     [HttpPost(nameof(Register))]
-    public IActionResult Register(RegisterRequest registerRequest)
+    public IActionResult Register(CreateUserDto createUserDto)
     {
-        var user = new User
-        {
-            Username = registerRequest.Username,
-            Password = BCrypt.Net.BCrypt.HashPassword(registerRequest.Password),
-            Surname = registerRequest.Surname,
-            Address = registerRequest.Address,
-            DateOfBirth = registerRequest.DateOfBirth,
-            Name = registerRequest.Name,
-        };
+        createUserDto.Password = BCrypt.Net.BCrypt.HashPassword(createUserDto.Password);
 
-        return Created("Success", _userRepository.Create(user));
+        return Created("Success", _userRepository.Create(createUserDto));
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> LoginAsync(LoginRequest loginRequest)
+    public async Task<IActionResult> LoginAsync(Models.Requests.LoginRequest loginRequest)
     {
         var user = _userRepository.GetByUsername(loginRequest.Username);
 

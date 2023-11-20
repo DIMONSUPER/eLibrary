@@ -7,11 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Validators\" />
+    <Folder Include="Validators\Requests\Auth\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mapster" Version="7.4.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BGNet.TestAssignment.DataAccess\BGNet.TestAssignment.DataAccess.csproj" />
+    <ProjectReference Include="..\BGNet.TestAssignment.Models\BGNet.TestAssignment.Models.csproj" />
   </ItemGroup>
 	
 </Project>

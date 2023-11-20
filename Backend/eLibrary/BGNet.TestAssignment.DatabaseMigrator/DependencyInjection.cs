@@ -9,11 +9,10 @@ public static class DependencyInjection
     public static IServiceCollection AddMigrations(this IServiceCollection services, string? connectionString)
     {
         services.AddDbContext<LibraryDbContext>(opt => opt.UseNpgsql(connectionString));
+        using var serviceProvider = services.BuildServiceProvider();
 
-        try 
+        try
         {
-            using var serviceProvider = services.BuildServiceProvider();
-
             var applicationContext = serviceProvider.GetRequiredService<LibraryDbContext>();
 
             applicationContext.Database.Migrate();

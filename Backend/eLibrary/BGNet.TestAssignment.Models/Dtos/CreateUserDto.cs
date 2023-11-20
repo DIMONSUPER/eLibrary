@@ -1,11 +1,7 @@
-﻿using System.Text.Json.Serialization;
+﻿namespace BGNet.TestAssignment.Models.Dtos;
 
-namespace BGNet.TestAssignment.DataAccess.Entities;
-
-public class User : IEntity
+public class CreateUserDto
 {
-    public int Id { get; set; }
-    [JsonIgnore]
     public string Password { get; set; } = null!;
     public string Username { get; set; } = null!;
     public string FirstName { get; set; } = null!;

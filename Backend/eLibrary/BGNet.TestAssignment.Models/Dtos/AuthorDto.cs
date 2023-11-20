@@ -1,11 +1,10 @@
-﻿namespace BGNet.TestAssignment.DataAccess.Entities;
+﻿namespace BGNet.TestAssignment.Models.Dtos;
 
-public class Author : IEntity
+public class AuthorDto
 {
     public int Id { get; set; }
     public string FirstName { get; set; } = null!;
     public string LastName { get; set; } = null!;
     public DateTime DateOfBirth { get; set; }
-
-    public ICollection<Book> Books { get; set; } = new List<Book>();
+    public string FullName => $"{FirstName} {LastName}";
 }

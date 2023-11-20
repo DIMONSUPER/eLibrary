@@ -1,5 +1,7 @@
 ﻿using BGNet.TestAssignment.DataAccess.Entities;
 using BGNet.TestAssignment.DataAccess.Repository;
+using BGNet.TestAssignment.Models.Dtos;
+using Mapster;
 
 namespace BGNet.TestAssignment.BusinessLogic.Services;
 
@@ -14,19 +16,21 @@ public class UserService : IUserService
 
     #region -- IUserRepository implementation --
 
-    public User Create(User user)
+    public UserDto Create(CreateUserDto createUserDto)
     {
-        return _repository.Create(user);
+        var user = createUserDto.Adapt<User>();
+
+        return _repository.Create(user).Adapt<UserDto>();
     }
 
-    public User? GetByUsername(string username)
+    public UserDto? GetByUsername(string username)
     {
-        return _repository.Find<User>(x => x.Username == username);
+        return _repository.Find<User>(x => x.Username == username).Adapt<UserDto>();
     }
 
-    public User? GetById(int id)
+    public UserDto? GetById(int id)
     {
-        return _repository.Find<User>(x => x.Id == id);
+        return _repository.Find<User>(x => x.Id == id).Adapt<UserDto>();
     }
 
     #endregion
@@ -34,7 +38,7 @@ public class UserService : IUserService
 
 public interface IUserService
 {
-    User Create(User user);
-    User? GetByUsername(string username);
-    User? GetById(int id);
+    UserDto Create(CreateUserDto createUserDto);
+    UserDto? GetByUsername(string username);
+    UserDto? GetById(int id);
 }

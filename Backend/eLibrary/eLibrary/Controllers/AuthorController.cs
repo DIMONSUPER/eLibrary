@@ -1,5 +1,6 @@
 ﻿using BGNet.TestAssignment.BusinessLogic.Services;
 using BGNet.TestAssignment.DataAccess.Entities;
+using BGNet.TestAssignment.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,7 +33,7 @@ public class AuthorController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult Create(Author author)
+    public IActionResult Create(AuthorDto author)
     {
         var createdAuthor = _authorRepository.Create(author);
 
@@ -40,7 +41,7 @@ public class AuthorController : ControllerBase
     }
 
     [HttpPut]
-    public IActionResult Update(Author author)
+    public IActionResult Update(AuthorDto author)
     {
         _authorRepository.Update(author);
 
