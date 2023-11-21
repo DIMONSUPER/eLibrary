@@ -5,7 +5,7 @@ using Microsoft.Extensions.Localization;
 
 namespace BGNet.TestAssignment.BusinessLogic.Validators.Requests.Library;
 
-internal class BookCreateUpdaterRequestValidator : AbstractValidator<BookDto>
+public class BookCreateUpdaterRequestValidator : AbstractValidator<BookDto>
 {
     public BookCreateUpdaterRequestValidator(IStringLocalizer<ValidationMessages> localizer)
     {
