@@ -34,7 +34,7 @@ public class AuthController : ControllerBase
     [HttpPost(nameof(Login))]
     public async Task<IActionResult> Login(Models.Requests.LoginRequest loginRequest)
     {
-        var user = _userRepository.GetByUsername(loginRequest.Username);
+        var user = _userRepository.GetFullUserByUsername(loginRequest.Username);
 
         IActionResult result;
 
@@ -63,9 +63,20 @@ public class AuthController : ControllerBase
     [Authorize]
     public IActionResult GetUser()
     {
-        var user = _userRepository.GetByUsername(User.Identity!.Name!);
+        IActionResult result;
 
-        return Ok(user);
+        if (string.IsNullOrWhiteSpace(User?.Identity?.Name))
+        {
+            result = Unauthorized("You should be authorized");
+        }
+        else
+        {
+            var user = _userRepository.GetShortUserByUsername(User.Identity.Name);
+
+            result = Ok(user);
+        }
+
+        return result;
     }
 
     [HttpPost(nameof(Logout))]

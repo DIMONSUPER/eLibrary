@@ -10,8 +10,4 @@
     <Folder Include="Responses\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\BGNet.TestAssignment.DataAccess\BGNet.TestAssignment.DataAccess.csproj" />
-  </ItemGroup>
-
 </Project>

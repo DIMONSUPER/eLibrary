@@ -10,10 +10,6 @@ public class BookEntityConfiguration : IEntityTypeConfiguration<Book>
     public void Configure(EntityTypeBuilder<Book> builder)
     {
         builder.HasKey(x => x.Id);
-        builder.Property(x => x.Title).IsRequired();
-        builder.Property(x => x.PublicationYear).IsRequired();
-        builder.Property(x => x.Genre).IsRequired();
-        builder.Property(x => x.AuthorId).IsRequired();
 
         builder
             .HasOne(b => b.Author)

@@ -48,7 +48,7 @@ public class BookController : ControllerBase
         return Ok("Success");
     }
 
-    [HttpDelete]
+    [HttpDelete("{id:int}")]
     public IActionResult Delete(int id)
     {
         _bookRepository.Delete(id);

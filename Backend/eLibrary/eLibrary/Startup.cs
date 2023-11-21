@@ -4,6 +4,7 @@ using BGNet.TestAssignment.Common;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication;
+using BGNet.TestAssignment.DataAccess;
 
 namespace BGNet.TestAssignment.Api;
 
@@ -24,8 +25,10 @@ public class Startup
 
         services.AddMigrations(_configuration.GetConnectionString("Default"));
 
-        services.AddControllersWithViews()
+        services.AddControllers()
             .AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+        services.RegisterRepository();
 
         services.RegisterServicesAndValidators();
 

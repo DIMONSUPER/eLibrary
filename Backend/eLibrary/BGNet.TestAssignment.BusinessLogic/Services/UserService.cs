@@ -16,21 +16,26 @@ public class UserService : IUserService
 
     #region -- IUserRepository implementation --
 
-    public UserDto Create(FullUserDto createUserDto)
+    public ShortUserDto Create(FullUserDto createUserDto)
     {
         var user = createUserDto.Adapt<User>();
 
-        return _repository.Create(user).Adapt<UserDto>();
+        return _repository.Create(user).Adapt<ShortUserDto>();
     }
 
-    public FullUserDto? GetByUsername(string username)
+    public FullUserDto? GetFullUserByUsername(string username)
     {
-        return _repository.Find<User>(x => x.Username == username).Adapt<FullUserDto>();
+        return _repository.GetNoTrackingQueryable<User>().SingleOrDefault(x => x.Username == username).Adapt<FullUserDto>();
     }
 
-    public UserDto? GetById(int id)
+    public ShortUserDto? GetShortUserByUsername(string username)
     {
-        return _repository.Find<User>(x => x.Id == id).Adapt<UserDto>();
+        return _repository.GetNoTrackingQueryable<User>().SingleOrDefault(x => x.Username == username).Adapt<ShortUserDto>();
+    }
+
+    public ShortUserDto? GetById(int id)
+    {
+        return _repository.GetNoTrackingQueryable<User>().SingleOrDefault(x => x.Id == id).Adapt<ShortUserDto>();
     }
 
     #endregion
@@ -38,7 +43,8 @@ public class UserService : IUserService
 
 public interface IUserService
 {
-    UserDto Create(FullUserDto fullUserDto);
-    FullUserDto? GetByUsername(string username);
-    UserDto? GetById(int id);
+    ShortUserDto Create(FullUserDto fullUserDto);
+    FullUserDto? GetFullUserByUsername(string username);
+    ShortUserDto? GetShortUserByUsername(string username);
+    ShortUserDto? GetById(int id);
 }

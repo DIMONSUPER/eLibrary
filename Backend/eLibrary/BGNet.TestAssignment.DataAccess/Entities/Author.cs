@@ -3,9 +3,9 @@
 public class Author : IEntity
 {
     public int Id { get; set; }
-    public string FirstName { get; set; } = null!;
-    public string LastName { get; set; } = null!;
-    public DateTime DateOfBirth { get; set; }
+    public required string FirstName { get; set; }
+    public required string LastName { get; set; }
+    public required DateTime DateOfBirth { get; set; }
 
     public ICollection<Book> Books { get; set; } = new List<Book>();
 }

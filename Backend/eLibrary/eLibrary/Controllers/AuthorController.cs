@@ -48,7 +48,7 @@ public class AuthorController : ControllerBase
         return Ok("Success");
     }
 
-    [HttpDelete]
+    [HttpDelete("{id:int}")]
     public IActionResult Delete(int id)
     {
         _authorRepository.Delete(id);

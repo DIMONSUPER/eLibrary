@@ -12,9 +12,9 @@ public class LibraryDbContext : DbContext
 
     #region -- Public properties --
 
-    public DbSet<User> Users { get; set; } = null!;
-    public DbSet<Author> Authors { get; set; } = null!;
-    public DbSet<Book> Books { get; set; } = null!;
+    public required DbSet<User> Users { get; set; }
+    public required DbSet<Author> Authors { get; set; }
+    public required DbSet<Book> Books { get; set; }
 
     #endregion
 

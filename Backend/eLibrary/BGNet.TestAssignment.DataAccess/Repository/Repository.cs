@@ -13,6 +13,8 @@ public class Repository : IRepository
         _applicationContext = context;
     }
 
+    #region -- IRepository implementation --
+
     public T Create<T>(T entity) where T : class, IEntity
     {
         _applicationContext.Set<T>().Add(entity);
@@ -37,4 +39,6 @@ public class Repository : IRepository
     public IQueryable<T> GetQueryable<T>() where T : class, IEntity => _applicationContext.Set<T>().AsQueryable();
 
     public IQueryable<T> GetNoTrackingQueryable<T>() where T : class, IEntity => _applicationContext.Set<T>().AsNoTracking();
+
+    #endregion
 }

@@ -3,10 +3,10 @@
 public class Book : IEntity
 {
     public int Id { get; set; }
-    public string Title { get; set; } = null!;
-    public int PublicationYear { get; set; }
-    public string Genre { get; set; } = null!;
+    public required string Title { get; set; }
+    public required int PublicationYear { get; set; }
+    public required string Genre { get; set; }
 
     public Author? Author { get; set; }
-    public int AuthorId { get; set; }
+    public required int AuthorId { get; set; }
 }

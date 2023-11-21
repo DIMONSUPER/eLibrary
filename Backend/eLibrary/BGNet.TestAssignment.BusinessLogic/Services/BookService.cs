@@ -2,6 +2,7 @@
 using BGNet.TestAssignment.DataAccess.Repository;
 using BGNet.TestAssignment.Models.Dtos;
 using Mapster;
+using Microsoft.EntityFrameworkCore;
 
 namespace BGNet.TestAssignment.BusinessLogic.Services;
 
@@ -27,7 +28,7 @@ public class BookService : IBookService
 
     public void Delete(int id)
     {
-        var book = _repository.GetById<Book>(id);
+        var book = _repository.GetNoTrackingQueryable<Book>().SingleOrDefault(x => x.Id == id);
 
         if (book is not null)
         {
@@ -37,12 +38,12 @@ public class BookService : IBookService
 
     public IEnumerable<BookDto> GetAll()
     {
-        return _repository.GetAll<Book>(nameof(Book.Author)).Adapt<IEnumerable<BookDto>>();
+        return _repository.GetNoTrackingQueryable<Book>().Include(x => x.Author).Adapt<IEnumerable<BookDto>>();
     }
 
     public BookDto? GetById(int id)
     {
-        return _repository.GetById<Book>(id, nameof(Book.Author)).Adapt<BookDto>();
+        return _repository.GetNoTrackingQueryable<Book>().Include(x => x.Author).SingleOrDefault(x => x.Id == id).Adapt<BookDto>();
     }
 
     public void Update(BookDto bookDto)

@@ -11,11 +11,6 @@ public class UserEntityConfiguration : IEntityTypeConfiguration<User>
     {
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.Username).IsUnique();
-        builder.Property(x => x.Password).IsRequired();
-        builder.Property(x => x.FirstName).IsRequired();
-        builder.Property(x => x.LastName).IsRequired();
-        builder.Property(x => x.Address).IsRequired();
-        builder.Property(x => x.DateOfBirth).IsRequired();
     }
 
     #endregion
