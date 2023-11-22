@@ -1,5 +1,4 @@
 ﻿using BGNet.TestAssignment.BusinessLogic.Services;
-using BGNet.TestAssignment.DataAccess.Entities;
 using BGNet.TestAssignment.Models.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -5,6 +5,12 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication;
 using BGNet.TestAssignment.DataAccess;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using BGNet.TestAssignment.Common.Configurations.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using BGNet.TestAssignment.Models.Responses;
+using System.Net;
 
 namespace BGNet.TestAssignment.Api;
 
@@ -21,6 +27,8 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
+        services.Configure<JwtOptions>(_configuration.GetSection(JwtOptions.Jwt));
+
         services.AddCors();
 
         services.AddMigrations(_configuration.GetConnectionString("Default"));
@@ -32,14 +40,33 @@ public class Startup
 
         services.RegisterServicesAndValidators();
 
-        services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-            .AddCookie(options =>
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            var jwtOptions = _configuration.GetSection(JwtOptions.Jwt).Get<JwtOptions>();
+
+            if (jwtOptions is not null)
             {
-                options.ExpireTimeSpan = TimeSpan.FromHours(1);
-                options.SlidingExpiration = true;
-                options.Events.OnRedirectToLogin = OnRedirectToLogin;
-            });
-    } 
+                options.Authority = jwtOptions.Authority;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtOptions.SecureKey)),
+                };
+            }
+
+            options.RequireHttpsMetadata = false;
+        });
+    }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
@@ -66,17 +93,6 @@ public class Startup
             .AllowCredentials());
 
         app.UseEndpoints(endpoints => endpoints.MapDefaultControllerRoute());
-    }
-
-    #endregion
-
-    #region -- Private helpers --
-
-    private Task OnRedirectToLogin(RedirectContext<CookieAuthenticationOptions> context)
-    {
-        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-
-        return context.Response.WriteAsync("You should be authorized to view this page");
     }
 
     #endregion

@@ -21,7 +21,7 @@ public class UserUpdateRequestValidator : AbstractValidator<ShortUserDto>
 
         RuleFor(x => x.Address).MinimumLength(1).WithMessage(x => localizer[nameof(ValidationMessages.UserAddressMinimumLength)]);
 
-        RuleFor(x => x.DateOfBirth).LessThanOrEqualTo(DateTime.Now.ToUniversalTime()).WithMessage(x => localizer[nameof(ValidationMessages.DateOfBirthLessThanOrEqualTo)]);
-        RuleFor(x => x.DateOfBirth).GreaterThan(DateTime.Now.AddYears(-150).ToUniversalTime()).WithMessage(x => localizer[nameof(ValidationMessages.UserDateOfBirthGreaterThan)]);
+        RuleFor(x => x.DateOfBirth).LessThanOrEqualTo(DateTime.UtcNow).WithMessage(x => localizer[nameof(ValidationMessages.DateOfBirthLessThanOrEqualTo)]);
+        RuleFor(x => x.DateOfBirth).GreaterThan(DateTime.UtcNow.AddYears(-150)).WithMessage(x => localizer[nameof(ValidationMessages.UserDateOfBirthGreaterThan)]);
     }
 }

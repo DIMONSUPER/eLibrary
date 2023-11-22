@@ -15,6 +15,6 @@ public class AuthorCreateUpdaterRequestValidator : AbstractValidator<AuthorDto>
         RuleFor(x => x.LastName).MinimumLength(1).WithMessage(x => localizer[nameof(ValidationMessages.LastNameMinimumLength)]);
         RuleFor(x => x.LastName).MaximumLength(16).WithMessage(x => localizer[nameof(ValidationMessages.LastNameMaximumLength)]);
 
-        RuleFor(x => x.DateOfBirth).LessThanOrEqualTo(DateTime.Now.ToUniversalTime()).WithMessage(x => localizer[nameof(ValidationMessages.DateOfBirthLessThanOrEqualTo)]);
+        RuleFor(x => x.DateOfBirth).LessThanOrEqualTo(DateTime.UtcNow).WithMessage(x => localizer[nameof(ValidationMessages.DateOfBirthLessThanOrEqualTo)]);
     }
 }

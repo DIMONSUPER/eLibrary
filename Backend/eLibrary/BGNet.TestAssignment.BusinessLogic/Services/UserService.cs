@@ -1,6 +1,7 @@
 ﻿using BGNet.TestAssignment.DataAccess.Entities;
 using BGNet.TestAssignment.DataAccess.Repository;
 using BGNet.TestAssignment.Models.Dtos;
+using BGNet.TestAssignment.Models.Requests;
 using Mapster;
 
 namespace BGNet.TestAssignment.BusinessLogic.Services;
@@ -33,9 +34,16 @@ public class UserService : IUserService
         return _repository.GetNoTrackingQueryable<User>().SingleOrDefault(x => x.Username == username).Adapt<ShortUserDto>();
     }
 
-    public ShortUserDto? GetById(int id)
+    public bool VerifyLoginRequest(LoginRequest loginRequest)
     {
-        return _repository.GetNoTrackingQueryable<User>().SingleOrDefault(x => x.Id == id).Adapt<ShortUserDto>();
+        var user = GetFullUserByUsername(loginRequest.Username);
+
+        return user is not null && BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password);
+    }
+
+    public bool VerifyUsernameIsNotBusy(string username)
+    {
+        return !_repository.GetNoTrackingQueryable<User>().Any(x => x.Username == username);
     }
 
     #endregion
@@ -46,5 +54,6 @@ public interface IUserService
     ShortUserDto Create(FullUserDto fullUserDto);
     FullUserDto? GetFullUserByUsername(string username);
     ShortUserDto? GetShortUserByUsername(string username);
-    ShortUserDto? GetById(int id);
+    bool VerifyLoginRequest(LoginRequest loginRequest);
+    bool VerifyUsernameIsNotBusy(string username);
 }

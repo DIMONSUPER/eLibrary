@@ -1,12 +1,9 @@
 ﻿using BGNet.TestAssignment.BusinessLogic.Services;
 using BGNet.TestAssignment.Models.Dtos;
-using BGNet.TestAssignment.Models.Requests;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using BGNet.TestAssignment.Models.Responses;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+using System.Net;
 
 namespace BGNet.TestAssignment.Api.Controllers;
 
@@ -15,41 +12,53 @@ namespace BGNet.TestAssignment.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IUserService _userRepository;
+    private readonly IAuthService _authService;
 
-    public AuthController(IUserService userRepository)
+    public AuthController(IUserService userRepository, IAuthService authService)
     {
         _userRepository = userRepository;
+        _authService = authService;
     }
 
     #region -- APIs implementation --
 
     [HttpPost(nameof(Register))]
-    public IActionResult Register(FullUserDto createUserDto)
+    public IActionResult Register(FullUserDto userDto)
     {
-        createUserDto.Password = BCrypt.Net.BCrypt.HashPassword(createUserDto.Password);
+        IActionResult result;
 
-        return Created("Success", _userRepository.Create(createUserDto));
+        if (_userRepository.VerifyUsernameIsNotBusy(userDto.Username))
+        {
+            _authService.RegisterNewUser(userDto);
+
+            result = CreatedAtAction(nameof(Register), new ApiResponse
+            {
+                StatusCode = (int)HttpStatusCode.Created,
+                Message = $"User with username {userDto.Username} was created successfully",
+            });
+        }
+        else
+        {
+            result = BadRequest(new ApiResponse
+            {
+                StatusCode = (int)HttpStatusCode.BadRequest,
+                Errors = new[] { "User with such username already exists" },
+            });
+        }
+
+        return result;
     }
 
     [HttpPost(nameof(Login))]
-    public async Task<IActionResult> Login(Models.Requests.LoginRequest loginRequest)
+    public IActionResult Login(Models.Requests.LoginRequest loginRequest)
     {
-        var user = _userRepository.GetFullUserByUsername(loginRequest.Username);
-
         IActionResult result;
 
-        if (user is not null && BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
+        if (_userRepository.VerifyLoginRequest(loginRequest))
         {
-            var claims = new List<Claim> 
-            {
-                new(ClaimTypes.Name, user.Username),
-            };
+            var jwt = _authService.GenerateJwt(loginRequest.Username);
 
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new(claimsIdentity));
-
-            result = Ok("Success");
+            result = Ok(jwt);
         }
         else
         {
@@ -77,14 +86,6 @@ public class AuthController : ControllerBase
         }
 
         return result;
-    }
-
-    [HttpPost(nameof(Logout))]
-    public async Task<IActionResult> Logout()
-    {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-        return Ok("Success");
     }
 
     #endregion

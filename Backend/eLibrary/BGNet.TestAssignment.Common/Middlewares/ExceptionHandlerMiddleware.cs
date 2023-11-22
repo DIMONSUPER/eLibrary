@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using BGNet.TestAssignment.Models.Responses;
+using Microsoft.AspNetCore.Http;
 using System.Net;
 
 namespace BGNet.TestAssignment.Common.Middlewares;
@@ -26,7 +27,7 @@ public class ExceptionHandlerMiddleware
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        var (status, message) = exception switch
+        var (status, errorMessage) = exception switch
         {
             ApplicationException _ => (HttpStatusCode.BadRequest, "Application exception occurred."),
             KeyNotFoundException _ => (HttpStatusCode.NotFound, "The request key not found."),
@@ -37,8 +38,12 @@ public class ExceptionHandlerMiddleware
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)status;
 
-        System.Diagnostics.Debug.WriteLine(exception);
+        var response = new ApiResponse
+        {
+            StatusCode = context.Response.StatusCode,
+            Errors = new[] { errorMessage },
+        };
 
-        await context.Response.WriteAsync(message);
+        await context.Response.WriteAsync(Newtonsoft.Json.JsonConvert.SerializeObject(response));
     }
 }
