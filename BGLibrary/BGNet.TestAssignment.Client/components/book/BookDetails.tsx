@@ -55,18 +55,18 @@ export default function BookDetails({ bookId }: { bookId: number }) {
 
   useEffect(() => {
     getBook(bookId).then((book) => {
-      setBook(book);
-      const initalAuthorName = `${book.author.name} ${book.author.surname}`;
+      setBook(book.data);
+      const initalAuthorName = `${book.data?.author?.firstName} ${book.data?.author?.lastName}`;
       setAuthorValue(initalAuthorName);
       setValues({
-        title: book.title,
-        publicationYear: book.publicationYear,
-        genre: book.genre,
-        authorId: book.author.id,
+        title: book.data?.title,
+        publicationYear: book.data?.publicationYear,
+        genre: book.data?.genre,
+        authorId: book.data?.author?.id,
       });
     });
     getAuthors().then((authors) => {
-      setAuthors(authors);
+      setAuthors(authors.data);
     });
   }, [bookId, setValues]);
 
@@ -99,7 +99,7 @@ export default function BookDetails({ bookId }: { bookId: number }) {
     return <Loader color="blue" />;
   }
 
-  const authorsNames = authors.map((x) => `${x.name} ${x.surname}`);
+  const authorsNames = authors.map((x) => `${x.firstName} ${x.lastName}`);
 
   return (
     <Paper radius="md" p="xl">

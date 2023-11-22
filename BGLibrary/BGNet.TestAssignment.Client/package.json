@@ -15,7 +15,7 @@
     "@mantine/hooks": "^7.2.1",
     "@mantine/modals": "^7.2.1",
     "dayjs": "^1.11.10",
-    "next": "^14.0.2",
+    "next": "^14.0.3",
     "react": "^18",
     "react-dom": "^18"
   },

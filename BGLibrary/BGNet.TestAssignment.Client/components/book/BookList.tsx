@@ -11,7 +11,7 @@ export default function BookList() {
 
   useEffect(() => {
     getBooks().then((books) => {
-      setBooks(books);
+      setBooks(books.data);
     });
   }, []);
 
@@ -29,7 +29,7 @@ export default function BookList() {
       <Table.Td>{row.publicationYear}</Table.Td>
       <Table.Td>
         <Anchor fz="sm" href={`/authors/author/${row.author.id}`}>
-          {`${row.author.name} ${row.author.surname}`}
+          {`${row.author.firstName} ${row.author.lastName}`}
         </Anchor>
       </Table.Td>
       <Table.Td>{row.genre}</Table.Td>

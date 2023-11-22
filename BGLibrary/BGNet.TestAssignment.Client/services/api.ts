@@ -27,6 +27,7 @@ export type Author = {
   firstName: string;
   lastName: string;
   dateOfBirth: Date;
+  fullName?: string;
 };
 
 export type Book = {
@@ -34,25 +35,18 @@ export type Book = {
   title: string;
   publicationYear: number;
   genre: string;
-  author: Author;
-};
-
-export type BookDTO = {
-  id: number;
-  title: string;
-  publicationYear: number;
-  genre: string;
+  author?: Author;
   authorId: number;
 };
 
-export type ApiResponse<T> = {
+export interface ApiResponse<T> {
   statusCode: number;
   message: string;
-  data: T;
+  data?: T;
   errors: string[];
-};
+}
 
-const makePostRequest = async (path: string, body: object) => {
+function generateHeaders() {
   var headers: { [headerName: string]: string } = {};
   headers['Content-Type'] = 'application/json';
 
@@ -62,322 +56,103 @@ const makePostRequest = async (path: string, body: object) => {
     headers['Authorization'] = `Bearer ${jwt}`;
   }
 
-  const response = await fetch(`${API_URL}/${path}`, {
-    method: 'POST',
-    headers: headers,
-    body: JSON.stringify(body),
-  });
+  return headers;
+}
 
-  return (await response.json()) as ApiResponse<string>;
-};
-
-export const login = async (loginData: LoginData) => {
+async function makeRequest<T>(path: string, method: string, body?: object) {
   try {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(loginData),
+    const response = await fetch(`${API_URL}/${path}`, {
+      method: method,
+      headers: generateHeaders(),
+      body: JSON.stringify(body),
     });
 
-    const json = (await response.json()) as ApiResponse<string>;
-
-    return json.data;
+    return (await response.json()) as ApiResponse<T>;
   } catch (error) {
-    console.error('Error during login:', error);
-    throw error;
+    console.error('Error during making request:', error);
+    return {
+      statusCode: 400,
+      message: `Error during making request: ${error}`,
+      errors: [`Error during making request: ${error}`],
+    };
   }
+}
+
+export const login = (loginData: LoginData) =>
+  makeRequest<string>('auth/login', 'POST', loginData);
+
+export const register = (registerData: RegisterData) =>
+  makeRequest('auth/register', 'POST', registerData);
+
+export const getUser = async () => {
+  const result = await makeRequest<UserData>('auth/user', 'GET');
+
+  if (result?.data != null) {
+    result.data.dateOfBirth = new Date(result.data.dateOfBirth);
+  }
+
+  return result;
 };
 
-export const register = async (registerData: RegisterData) => {
-  try {
-    const response = await fetch(`${API_URL}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(registerData),
-    });
+export const getBooks = async () => {
+  const result = await makeRequest<Book[]>('book', 'GET');
 
-    return (await response.json()) as ApiResponse<object>;
-  } catch (error) {
-    console.error('Error during registration:', error);
-    throw error;
+  if (result?.data != null) {
+    const books = result.data;
+
+    for (let i in books) {
+      books[i].author.dateOfBirth = new Date(books[i].author.dateOfBirth);
+    }
   }
+
+  return result;
 };
 
-export const getUser = async (): Promise<ApiResponse<UserData>> => {
-  try {
-    const response = await fetch(`${API_URL}/auth/user`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${JSON.parse(
-          localStorage.getItem('jwt') ?? ''
-        )}`,
-      },
-    });
+export const updateBook = (book: Book) => makeRequest('book', 'PUT', book);
 
-    const result = (await response.json()) as ApiResponse<UserData>;
+export const createBook = (book: Book) => makeRequest('book', 'POST', book);
 
-    if (response.ok) {
-      result.data.dateOfBirth = new Date(result.data.dateOfBirth);
-    }
+export const deleteBook = (id: number) => makeRequest(`book/${id}`, 'DELETE');
 
-    return result;
-  } catch (error) {
-    console.error('Error during getting user:', error);
-    throw error;
+export const getBook = async (id: number) => {
+  const result = await makeRequest<Book>(`book/${id}`, 'GET');
+
+  if (result?.data != null) {
+    result.data.author.dateOfBirth = new Date(result.data.author.dateOfBirth);
   }
+
+  return result;
 };
 
-export const getBooks = async (): Promise<Book[]> => {
-  try {
-    const response = await fetch('https://localhost:7261/api/book', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${JSON.parse(
-          localStorage.getItem('jwt') ?? ''
-        )}`,
-      },
-    });
+export const getAuthors = async () => {
+  const result = await makeRequest<Author[]>('book', 'GET');
 
-    if (!response.ok) {
-      throw new Error('GetBooks failed');
+  if (result?.data != null) {
+    const authors = result.data;
+
+    for (let i in authors) {
+      authors[i].dateOfBirth = new Date(authors[i].dateOfBirth);
     }
-
-    const result = await response.json();
-    for (let i in result) {
-      result[i].author.dateOfBirth = new Date(result[i].author.dateOfBirth);
-    }
-
-    return result;
-  } catch (error) {
-    console.error('Error during getting books:', error);
-    throw error;
   }
+
+  return result;
 };
 
-export const updateBook = async (book: BookDTO): Promise<string> => {
-  try {
-    const response = await fetch('https://localhost:7261/api/book', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${JSON.parse(
-          localStorage.getItem('jwt') ?? ''
-        )}`,
-      },
-      body: JSON.stringify(book),
-    });
+export const updateAuthor = (author: Author) =>
+  makeRequest('author', 'PUT', author);
 
-    if (!response.ok) {
-      throw new Error('UpdateBook failed');
-    }
+export const createAuthor = (author: Author) =>
+  makeRequest('author', 'POST', author);
 
-    return response.text();
-  } catch (error) {
-    console.error('Error during updating book:', error);
-    throw error;
+export const deleteAuthor = (id: number) =>
+  makeRequest(`author/${id}`, 'DELETE');
+
+export const getAuthor = async (id: number) => {
+  const result = await makeRequest<Author>(`book/${id}`, 'GET');
+
+  if (result?.data != null) {
+    result.data.dateOfBirth = new Date(result.data.dateOfBirth);
   }
-};
 
-export const createBook = async (book: BookDTO): Promise<string> => {
-  try {
-    const response = await fetch('https://localhost:7261/api/book', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${JSON.parse(
-          localStorage.getItem('jwt') ?? ''
-        )}`,
-      },
-      body: JSON.stringify(book),
-    });
-
-    if (!response.ok) {
-      throw new Error('CreateBook failed');
-    }
-
-    return response.text();
-  } catch (error) {
-    console.error('Error during creating book:', error);
-    throw error;
-  }
-};
-
-export const deleteBook = async (id: number): Promise<string> => {
-  try {
-    const response = await fetch(`https://localhost:7261/api/book?id=${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${JSON.parse(
-          localStorage.getItem('jwt') ?? ''
-        )}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('DeleteBook failed');
-    }
-
-    return response.text();
-  } catch (error) {
-    console.error('Error during deleting book:', error);
-    throw error;
-  }
-};
-
-export const getBook = async (id: number): Promise<Book> => {
-  try {
-    const response = await fetch(`https://localhost:7261/api/book/${id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${JSON.parse(
-          localStorage.getItem('jwt') ?? ''
-        )}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('GetBook failed');
-    }
-
-    const result = await response.json();
-    result.author.dateOfBirth = new Date(result.author.dateOfBirth);
-
-    return result;
-  } catch (error) {
-    console.error('Error during getting book:', error);
-    throw error;
-  }
-};
-
-export const getAuthors = async (): Promise<Author[]> => {
-  try {
-    const response = await fetch('https://localhost:7261/api/author', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${JSON.parse(
-          localStorage.getItem('jwt') ?? ''
-        )}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('GetAuthors failed');
-    }
-
-    const result = await response.json();
-    for (let i in result) {
-      result[i].dateOfBirth = new Date(result[i].dateOfBirth);
-    }
-
-    return result;
-  } catch (error) {
-    console.error('Error during getting authors:', error);
-    throw error;
-  }
-};
-
-export const updateAuthor = async (author: Author): Promise<string> => {
-  try {
-    const response = await fetch('https://localhost:7261/api/author', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${JSON.parse(
-          localStorage.getItem('jwt') ?? ''
-        )}`,
-      },
-      body: JSON.stringify(author),
-    });
-
-    if (!response.ok) {
-      throw new Error('UpdateAuthor failed');
-    }
-
-    return response.text();
-  } catch (error) {
-    console.error('Error during updating author:', error);
-    throw error;
-  }
-};
-
-export const createAuthor = async (author: Author): Promise<string> => {
-  try {
-    const response = await fetch('https://localhost:7261/api/author', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${JSON.parse(
-          localStorage.getItem('jwt') ?? ''
-        )}`,
-      },
-      body: JSON.stringify(author),
-    });
-
-    if (!response.ok) {
-      throw new Error('UpdateAuthor failed');
-    }
-
-    return response.text();
-  } catch (error) {
-    console.error('Error during updating author:', error);
-    throw error;
-  }
-};
-
-export const deleteAuthor = async (id: number): Promise<string> => {
-  try {
-    const response = await fetch(`https://localhost:7261/api/author?id=${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${JSON.parse(
-          localStorage.getItem('jwt') ?? ''
-        )}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('DeleteAuthor failed');
-    }
-
-    return response.text();
-  } catch (error) {
-    console.error('Error during deleting author:', error);
-    throw error;
-  }
-};
-
-export const getAuthor = async (id: number): Promise<Author> => {
-  try {
-    const response = await fetch(`https://localhost:7261/api/author/${id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${JSON.parse(
-          localStorage.getItem('jwt') ?? ''
-        )}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('GetAuthor failed');
-    }
-
-    const result = await response.json();
-    result.dateOfBirth = new Date(result.dateOfBirth);
-
-    return result;
-  } catch (error) {
-    console.error('Error during getting author:', error);
-    throw error;
-  }
+  return result;
 };

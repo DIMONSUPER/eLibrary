@@ -11,7 +11,7 @@ import {
 import { UserData, getUser } from '@/services/api';
 import { DatePickerInput } from '@mantine/dates';
 import { useEffect, useState } from 'react';
-import { upperFirst, useLocalStorage } from '@mantine/hooks';
+import { useLocalStorage } from '@mantine/hooks';
 import { useRouter } from 'next/navigation';
 
 export default function Profile() {
@@ -23,7 +23,7 @@ export default function Profile() {
     console.log(token);
     if (token) {
       getUser().then((user) => {
-        setUser(user);
+        setUser(user.data);
       });
     }
   }, [token]);
@@ -60,7 +60,7 @@ export default function Profile() {
           disabled
           label="Name"
           placeholder="Name"
-          value={user.name}
+          value={user.firstName}
           radius="md"
         />
 
@@ -68,7 +68,7 @@ export default function Profile() {
           disabled
           label="Surname"
           placeholder="Surname"
-          value={user.surname}
+          value={user.lastName}
           radius="md"
         />
 
@@ -89,7 +89,7 @@ export default function Profile() {
 
         <Group justify="space-between" mt="xl">
           <Button radius="md" onClick={onLogoutClick}>
-            {upperFirst('Logout')}
+            Logout
           </Button>
         </Group>
       </Stack>

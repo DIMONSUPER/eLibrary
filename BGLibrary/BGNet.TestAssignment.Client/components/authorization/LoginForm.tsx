@@ -1,4 +1,4 @@
-import { upperFirst, useLocalStorage } from '@mantine/hooks';
+import { useLocalStorage, useValidatedState } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import {
   TextInput,
@@ -8,6 +8,7 @@ import {
   Group,
   Button,
   Divider,
+  Notification,
   Stack,
 } from '@mantine/core';
 import { login as loginApi } from '@/services/api';
@@ -16,18 +17,23 @@ import { useRouter } from 'next/navigation';
 export default function LoginForm() {
   const router = useRouter();
   const [, setValue] = useLocalStorage({ key: 'jwt' });
+  const [{ value, valid }, setErrorMessage] = useValidatedState(
+    '',
+    (val) => val == '',
+    true
+  );
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    try {
-      const jwt = await loginApi(form.values);
+    const loginResponse = await loginApi(form.values);
 
-      setValue(jwt);
-
+    if (loginResponse?.data) {
+      setValue(loginResponse.data);
+      setErrorMessage('');
       router.push('/profile');
-    } catch (error) {
-      console.error('Login failed:', error);
+    } else {
+      setErrorMessage(loginResponse.errors.join('<br /><br />'));
     }
   }
 
@@ -35,13 +41,6 @@ export default function LoginForm() {
     initialValues: {
       username: '',
       password: '',
-    },
-
-    validate: {
-      username: (val) =>
-        val.length < 6 ? 'Username should include at least 6 characters' : null,
-      password: (val) =>
-        val.length < 6 ? 'Password should include at least 6 characters' : null,
     },
   });
 
@@ -71,9 +70,15 @@ export default function LoginForm() {
             {...form.getInputProps('password')}
           />
 
+          {!valid && (
+            <Notification withCloseButton={false} color="red">
+              <p dangerouslySetInnerHTML={{ __html: value }} />
+            </Notification>
+          )}
+
           <Group justify="space-between" mt="xl">
             <Button type="submit" radius="md">
-              {upperFirst('login')}
+              Login
             </Button>
           </Group>
         </Stack>

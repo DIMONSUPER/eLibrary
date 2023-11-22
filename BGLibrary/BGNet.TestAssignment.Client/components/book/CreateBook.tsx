@@ -1,10 +1,4 @@
-import {
-  Author,
-  BookDTO,
-  createBook,
-  deleteBook,
-  getAuthors,
-} from '@/services/api';
+import { Author, Book, createBook, getAuthors } from '@/services/api';
 import {
   TextInput,
   Paper,
@@ -16,7 +10,6 @@ import {
   Loader,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { upperFirst } from '@mantine/hooks';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -26,7 +19,7 @@ export default function CreateBook() {
   const [authors, setAuthors] = useState<Author[]>();
   const [authorValue, setAuthorValue] = useState('');
 
-  const { values, getInputProps, setValues } = useForm<BookDTO>({
+  const { values, getInputProps, setValues } = useForm<Book>({
     initialValues: {
       id: 0,
       title: '',
@@ -49,9 +42,9 @@ export default function CreateBook() {
 
   useEffect(() => {
     getAuthors().then((authors) => {
-      setAuthors(authors);
-      if (authors && authors.length > 0) {
-        setValues({ authorId: authors[0].id });
+      setAuthors(authors.data);
+      if (authors?.data && authors.data.length > 0) {
+        setValues({ authorId: authors.data[0].id });
       }
     });
   }, []);
@@ -72,7 +65,7 @@ export default function CreateBook() {
     return <Loader color="blue" />;
   }
 
-  const authorsNames = authors.map((x) => `${x.name} ${x.surname}`);
+  const authorsNames = authors.map((x) => `${x.firstName} ${x.lastName}`);
 
   return (
     <Paper radius="md" p="xl">

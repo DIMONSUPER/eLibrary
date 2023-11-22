@@ -12,7 +12,6 @@ import {
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
-import { upperFirst } from '@mantine/hooks';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -24,25 +23,25 @@ export default function AuthorDetails({ authorId }: { authorId: number }) {
   const { values, getInputProps, setValues } = useForm<Author>({
     initialValues: {
       id: authorId,
-      name: '',
-      surname: '',
+      firstName: '',
+      lastName: '',
       dateOfBirth: new Date(2000, 11, 18),
     },
 
     validate: {
-      name: (val) => (val.length > 0 ? null : 'This field cant be empty'),
-      surname: (val) => (val.length > 0 ? null : 'This field cant be empty'),
+      firstName: (val) => (val.length > 0 ? null : 'This field cant be empty'),
+      lastName: (val) => (val.length > 0 ? null : 'This field cant be empty'),
     },
   });
 
   useEffect(() => {
     getAuthor(authorId).then((author) => {
       console.log(author);
-      setAuthor(author);
+      setAuthor(author.data);
       setValues({
-        name: author.name,
-        surname: author.surname,
-        dateOfBirth: author.dateOfBirth,
+        firstName: author.data?.firstName,
+        lastName: author.data?.lastName,
+        dateOfBirth: author.data?.dateOfBirth,
       });
     });
   }, [authorId, setValues]);
@@ -93,7 +92,7 @@ export default function AuthorDetails({ authorId }: { authorId: number }) {
             label="Surname"
             placeholder="Surname"
             radius="md"
-            {...getInputProps('surname')}
+            {...getInputProps('firstName')}
           />
 
           <DatePickerInput

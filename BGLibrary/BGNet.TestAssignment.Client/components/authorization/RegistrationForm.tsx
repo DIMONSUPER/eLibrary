@@ -1,4 +1,4 @@
-import { upperFirst } from '@mantine/hooks';
+import { useValidatedState } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
 import { DatePickerInput } from '@mantine/dates';
 import {
@@ -9,24 +9,30 @@ import {
   Group,
   Button,
   Divider,
+  Notification,
   Stack,
 } from '@mantine/core';
-import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
 import { register } from '@/services/api';
 
 export default function RegistrationForm() {
   const router = useRouter();
+  const [{ value, valid }, setErrorMessage] = useValidatedState(
+    '',
+    (val) => val == '',
+    true
+  );
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    try {
-      await register(form.values);
+    const registerResponse = await register(form.values);
 
+    if (registerResponse.statusCode == 201) {
+      setErrorMessage('');
       router.push('/login');
-    } catch (error) {
-      console.error('register failed:', error);
+    } else {
+      setErrorMessage(registerResponse.errors.join('<br /><br />'));
     }
   }
 
@@ -38,21 +44,6 @@ export default function RegistrationForm() {
       lastName: '',
       dateofbirth: new Date(2000, 11, 18),
       address: '',
-    },
-
-    validate: {
-      username: (val) =>
-        val.length < 6 ? 'Username should include at least 6 characters' : null,
-      password: (val) =>
-        val.length < 6 ? 'Password should include at least 6 characters' : null,
-      name: (val) => (val.length > 0 ? null : 'This field cant be empty'),
-      surname: (val) => (val.length > 0 ? null : 'This field cant be empty'),
-      dateofbirth: (val) =>
-        dayjs(new Date()).diff(val, 'y') >= 12
-          ? null
-          : 'You should be at least 12 years old',
-      address: (val) =>
-        val.length < 4 ? 'Address should include at least 4 characters' : null,
     },
   });
 
@@ -84,18 +75,18 @@ export default function RegistrationForm() {
 
           <TextInput
             required
-            label="Name"
-            placeholder="Name"
+            label="First Name"
+            placeholder="First Name"
             radius="md"
-            {...form.getInputProps('name')}
+            {...form.getInputProps('firstName')}
           />
 
           <TextInput
             required
-            label="Surname"
-            placeholder="Surname"
+            label="Last Name"
+            placeholder="Last Name"
             radius="md"
-            {...form.getInputProps('surname')}
+            {...form.getInputProps('lastName')}
           />
 
           <DatePickerInput
@@ -112,10 +103,19 @@ export default function RegistrationForm() {
             radius="md"
             {...form.getInputProps('address')}
           />
+          {!valid && (
+            <Notification
+              title="Please fix these issues:"
+              withCloseButton={false}
+              color="red"
+            >
+              <p dangerouslySetInnerHTML={{ __html: value }} />
+            </Notification>
+          )}
 
           <Group justify="space-between" mt="lg">
             <Button type="submit" radius="md">
-              {upperFirst('register')}
+              Register
             </Button>
           </Group>
         </Stack>
