@@ -58,11 +58,20 @@ public class AuthController : ControllerBase
         {
             var jwt = _authService.GenerateJwt(loginRequest.Username);
 
-            result = Ok(jwt);
+            result = Ok(new ApiResponse<string>
+            {
+                StatusCode = (int)HttpStatusCode.OK,
+                Data = jwt,
+                Message = "You have successfully logged in",
+            });
         }
         else
         {
-            result = Unauthorized(new { message = "Invalid credentials" });
+            result = BadRequest(new ApiResponse<string>
+            {
+                StatusCode = (int)HttpStatusCode.BadRequest,
+                Errors = new[] { "Invalid credentials" },
+            });
         }
 
         return result;
@@ -74,15 +83,24 @@ public class AuthController : ControllerBase
     {
         IActionResult result;
 
-        if (string.IsNullOrWhiteSpace(User?.Identity?.Name))
-        {
-            result = Unauthorized("You should be authorized");
-        }
-        else
+        if (!string.IsNullOrWhiteSpace(User?.Identity?.Name))
         {
             var user = _userRepository.GetShortUserByUsername(User.Identity.Name);
 
-            result = Ok(user);
+            result = Ok(new ApiResponse<ShortUserDto>
+            {
+                StatusCode = (int)HttpStatusCode.OK,
+                Data = user,
+                Message = "Success",
+            });
+        }
+        else
+        {
+            result = Unauthorized(new ApiResponse
+            {
+                StatusCode = (int)HttpStatusCode.OK,
+                Errors = new[] { "You must be authorized" },
+            });
         }
 
         return result;

@@ -1,11 +1,79 @@
-type LoginData = {
+const API_URL = 'https://localhost:7261/api';
+
+export type LoginData = {
   username: string;
   password: string;
-}
+};
+
+export type RegisterData = {
+  username: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  dateofbirth: Date;
+};
+
+export type UserData = {
+  username: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  dateOfBirth: Date;
+};
+
+export type Author = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: Date;
+};
+
+export type Book = {
+  id: number;
+  title: string;
+  publicationYear: number;
+  genre: string;
+  author: Author;
+};
+
+export type BookDTO = {
+  id: number;
+  title: string;
+  publicationYear: number;
+  genre: string;
+  authorId: number;
+};
+
+export type ApiResponse<T> = {
+  statusCode: number;
+  message: string;
+  data: T;
+  errors: string[];
+};
+
+const makePostRequest = async (path: string, body: object) => {
+  var headers: { [headerName: string]: string } = {};
+  headers['Content-Type'] = 'application/json';
+
+  const jwt = `${JSON.parse(localStorage.getItem('jwt') ?? '')}`;
+
+  if (jwt) {
+    headers['Authorization'] = `Bearer ${jwt}`;
+  }
+
+  const response = await fetch(`${API_URL}/${path}`, {
+    method: 'POST',
+    headers: headers,
+    body: JSON.stringify(body),
+  });
+
+  return (await response.json()) as ApiResponse<string>;
+};
 
 export const login = async (loginData: LoginData) => {
   try {
-    const response = await fetch('https://localhost:7261/api/auth/login', {
+    const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -13,30 +81,18 @@ export const login = async (loginData: LoginData) => {
       body: JSON.stringify(loginData),
     });
 
-    if (!response.ok) {
-      throw new Error('Login failed');
-    }
-    const json = await response.json();
+    const json = (await response.json()) as ApiResponse<string>;
 
-    return json.jwt;
+    return json.data;
   } catch (error) {
     console.error('Error during login:', error);
     throw error;
   }
 };
 
-type RegisterData = {
-  username: string;
-  password: string;
-  name: string;
-  surname: string;
-  address: string;
-  dateofbirth: Date;
-}
-
 export const register = async (registerData: RegisterData) => {
   try {
-    const response = await fetch('https://localhost:7261/api/auth/register', {
+    const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -44,40 +100,30 @@ export const register = async (registerData: RegisterData) => {
       body: JSON.stringify(registerData),
     });
 
-    if (!response.ok) {
-      throw new Error('Registration failed');
-    }
-
-    return await response.json();
+    return (await response.json()) as ApiResponse<object>;
   } catch (error) {
     console.error('Error during registration:', error);
     throw error;
   }
 };
 
-export interface UserData {
-  username: string;
-  name: string;
-  surname: string;
-  address: string;
-  dateOfBirth: Date;
-}
-
-export const getUser = async () : Promise<UserData> => {
+export const getUser = async (): Promise<ApiResponse<UserData>> => {
   try {
-    const response = await fetch('https://localhost:7261/api/auth/user', {
+    const response = await fetch(`${API_URL}/auth/user`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${JSON.parse(localStorage.getItem('jwt') ?? '')}`
+        Authorization: `Bearer ${JSON.parse(
+          localStorage.getItem('jwt') ?? ''
+        )}`,
       },
     });
-    if (!response.ok) {
-      throw new Error('GetUser failed');
-    }
 
-    const result = await response.json();
-    result.dateOfBirth = new Date(result.dateOfBirth);
+    const result = (await response.json()) as ApiResponse<UserData>;
+
+    if (response.ok) {
+      result.data.dateOfBirth = new Date(result.data.dateOfBirth);
+    }
 
     return result;
   } catch (error) {
@@ -86,28 +132,15 @@ export const getUser = async () : Promise<UserData> => {
   }
 };
 
-export interface Author {
-  id: number;
-  name: string;
-  surname: string;
-  dateOfBirth: Date;
-}
-
-export interface Book {
-  id: number;
-  title: string;
-  publicationYear: number;
-  genre: string;
-  author: Author;
-}
-
-export const getBooks = async () : Promise<Book[]> => {
+export const getBooks = async (): Promise<Book[]> => {
   try {
     const response = await fetch('https://localhost:7261/api/book', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${JSON.parse(localStorage.getItem('jwt') ?? '')}`
+        Authorization: `Bearer ${JSON.parse(
+          localStorage.getItem('jwt') ?? ''
+        )}`,
       },
     });
 
@@ -116,7 +149,7 @@ export const getBooks = async () : Promise<Book[]> => {
     }
 
     const result = await response.json();
-    for (let i in result){
+    for (let i in result) {
       result[i].author.dateOfBirth = new Date(result[i].author.dateOfBirth);
     }
 
@@ -127,21 +160,15 @@ export const getBooks = async () : Promise<Book[]> => {
   }
 };
 
-export interface BookDTO {
-  id: number;
-  title: string;
-  publicationYear: number;
-  genre: string;
-  authorId: number;
-}
-
-export const updateBook = async (book:BookDTO) : Promise<string> => {
+export const updateBook = async (book: BookDTO): Promise<string> => {
   try {
     const response = await fetch('https://localhost:7261/api/book', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${JSON.parse(localStorage.getItem('jwt') ?? '')}`
+        Authorization: `Bearer ${JSON.parse(
+          localStorage.getItem('jwt') ?? ''
+        )}`,
       },
       body: JSON.stringify(book),
     });
@@ -157,13 +184,15 @@ export const updateBook = async (book:BookDTO) : Promise<string> => {
   }
 };
 
-export const createBook = async (book:BookDTO) : Promise<string> => {
+export const createBook = async (book: BookDTO): Promise<string> => {
   try {
     const response = await fetch('https://localhost:7261/api/book', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${JSON.parse(localStorage.getItem('jwt') ?? '')}`
+        Authorization: `Bearer ${JSON.parse(
+          localStorage.getItem('jwt') ?? ''
+        )}`,
       },
       body: JSON.stringify(book),
     });
@@ -179,13 +208,15 @@ export const createBook = async (book:BookDTO) : Promise<string> => {
   }
 };
 
-export const deleteBook = async (id:number) : Promise<string> => {
+export const deleteBook = async (id: number): Promise<string> => {
   try {
     const response = await fetch(`https://localhost:7261/api/book?id=${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${JSON.parse(localStorage.getItem('jwt') ?? '')}`
+        Authorization: `Bearer ${JSON.parse(
+          localStorage.getItem('jwt') ?? ''
+        )}`,
       },
     });
 
@@ -200,13 +231,15 @@ export const deleteBook = async (id:number) : Promise<string> => {
   }
 };
 
-export const getBook = async (id:number) : Promise<Book> => {
+export const getBook = async (id: number): Promise<Book> => {
   try {
     const response = await fetch(`https://localhost:7261/api/book/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${JSON.parse(localStorage.getItem('jwt') ?? '')}`
+        Authorization: `Bearer ${JSON.parse(
+          localStorage.getItem('jwt') ?? ''
+        )}`,
       },
     });
 
@@ -224,13 +257,15 @@ export const getBook = async (id:number) : Promise<Book> => {
   }
 };
 
-export const getAuthors = async () : Promise<Author[]> => {
+export const getAuthors = async (): Promise<Author[]> => {
   try {
     const response = await fetch('https://localhost:7261/api/author', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${JSON.parse(localStorage.getItem('jwt') ?? '')}`
+        Authorization: `Bearer ${JSON.parse(
+          localStorage.getItem('jwt') ?? ''
+        )}`,
       },
     });
 
@@ -239,7 +274,7 @@ export const getAuthors = async () : Promise<Author[]> => {
     }
 
     const result = await response.json();
-    for (let i in result){
+    for (let i in result) {
       result[i].dateOfBirth = new Date(result[i].dateOfBirth);
     }
 
@@ -250,13 +285,15 @@ export const getAuthors = async () : Promise<Author[]> => {
   }
 };
 
-export const updateAuthor = async (author:Author) : Promise<string> => {
+export const updateAuthor = async (author: Author): Promise<string> => {
   try {
     const response = await fetch('https://localhost:7261/api/author', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${JSON.parse(localStorage.getItem('jwt') ?? '')}`
+        Authorization: `Bearer ${JSON.parse(
+          localStorage.getItem('jwt') ?? ''
+        )}`,
       },
       body: JSON.stringify(author),
     });
@@ -272,13 +309,15 @@ export const updateAuthor = async (author:Author) : Promise<string> => {
   }
 };
 
-export const createAuthor = async (author:Author) : Promise<string> => {
+export const createAuthor = async (author: Author): Promise<string> => {
   try {
     const response = await fetch('https://localhost:7261/api/author', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${JSON.parse(localStorage.getItem('jwt') ?? '')}`
+        Authorization: `Bearer ${JSON.parse(
+          localStorage.getItem('jwt') ?? ''
+        )}`,
       },
       body: JSON.stringify(author),
     });
@@ -294,14 +333,15 @@ export const createAuthor = async (author:Author) : Promise<string> => {
   }
 };
 
-
-export const deleteAuthor = async (id:number) : Promise<string> => {
+export const deleteAuthor = async (id: number): Promise<string> => {
   try {
     const response = await fetch(`https://localhost:7261/api/author?id=${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${JSON.parse(localStorage.getItem('jwt') ?? '')}`
+        Authorization: `Bearer ${JSON.parse(
+          localStorage.getItem('jwt') ?? ''
+        )}`,
       },
     });
 
@@ -316,13 +356,15 @@ export const deleteAuthor = async (id:number) : Promise<string> => {
   }
 };
 
-export const getAuthor = async (id:number) : Promise<Author> => {
+export const getAuthor = async (id: number): Promise<Author> => {
   try {
     const response = await fetch(`https://localhost:7261/api/author/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${JSON.parse(localStorage.getItem('jwt') ?? '')}`
+        Authorization: `Bearer ${JSON.parse(
+          localStorage.getItem('jwt') ?? ''
+        )}`,
       },
     });
 

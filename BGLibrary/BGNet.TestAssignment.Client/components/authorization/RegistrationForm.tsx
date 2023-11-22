@@ -34,8 +34,8 @@ export default function RegistrationForm() {
     initialValues: {
       username: '',
       password: '',
-      name: '',
-      surname: '',
+      firstName: '',
+      lastName: '',
       dateofbirth: new Date(2000, 11, 18),
       address: '',
     },
