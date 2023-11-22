@@ -1,16 +1,12 @@
 ﻿using BGNet.TestAssignment.BusinessLogic;
 using BGNet.TestAssignment.DatabaseMigrator;
 using BGNet.TestAssignment.Common;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication;
 using BGNet.TestAssignment.DataAccess;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using BGNet.TestAssignment.Common.Configurations.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using BGNet.TestAssignment.Models.Responses;
-using System.Net;
 
 namespace BGNet.TestAssignment.Api;
 

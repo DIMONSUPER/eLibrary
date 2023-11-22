@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BGNet.TestAssignment.Api", "eLibrary\BGNet.TestAssignment.Api.csproj", "{CC94EC26-1498-430B-B082-B4640DE0BEA5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BGNet.TestAssignment.Api", "BGNet.TestAssignment.Api\BGNet.TestAssignment.Api.csproj", "{CC94EC26-1498-430B-B082-B4640DE0BEA5}"
 	ProjectSection(ProjectDependencies) = postProject
 		{E3EBDBDB-FB59-431F-A062-F6823EEF9C3C} = {E3EBDBDB-FB59-431F-A062-F6823EEF9C3C}
 	EndProjectSection
@@ -17,6 +17,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BGNet.TestAssignment.DatabaseMigrator", "BGNet.TestAssignment.DatabaseMigrator\BGNet.TestAssignment.DatabaseMigrator.csproj", "{1D97E3F0-EA11-4273-818E-584CFE66DEBC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BGNet.TestAssignment.Models", "BGNet.TestAssignment.Models\BGNet.TestAssignment.Models.csproj", "{9C96C293-88B5-4069-A0E4-9C9693F0A0D5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebApi", "WebApi", "{2CB7D799-AF8D-4582-8AB6-03BC711F5126}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,14 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CC94EC26-1498-430B-B082-B4640DE0BEA5} = {2CB7D799-AF8D-4582-8AB6-03BC711F5126}
+		{4426BF87-851A-43E2-BE60-4F08713C2599} = {2CB7D799-AF8D-4582-8AB6-03BC711F5126}
+		{E3EBDBDB-FB59-431F-A062-F6823EEF9C3C} = {2CB7D799-AF8D-4582-8AB6-03BC711F5126}
+		{53BBDDBE-FD67-4C0C-8F9B-BDDA07245862} = {2CB7D799-AF8D-4582-8AB6-03BC711F5126}
+		{1D97E3F0-EA11-4273-818E-584CFE66DEBC} = {2CB7D799-AF8D-4582-8AB6-03BC711F5126}
+		{9C96C293-88B5-4069-A0E4-9C9693F0A0D5} = {2CB7D799-AF8D-4582-8AB6-03BC711F5126}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {253CBCF9-6DBD-4AE3-955B-841999E095CB}
