@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using BGNet.TestAssignment.Common.Configurations.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using BGNet.TestAssignment.Models.Responses;
 
 namespace BGNet.TestAssignment.Api;
 
@@ -45,6 +46,7 @@ public class Startup
         .AddJwtBearer(options =>
         {
             var jwtOptions = _configuration.GetSection(JwtOptions.Jwt).Get<JwtOptions>();
+            options.RequireHttpsMetadata = false;
 
             if (jwtOptions is not null)
             {
@@ -59,8 +61,10 @@ public class Startup
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtOptions.SecureKey)),
                 };
             }
-
-            options.RequireHttpsMetadata = false;
+            options.Events = new JwtBearerEvents
+            {
+                OnChallenge = OnJwtChallenge,
+            };
         });
     }
 
@@ -76,19 +80,38 @@ public class Startup
         app.UseStaticFiles();
         app.UseRouting();
 
+        app.UseCors(options => options
+        .WithOrigins("http://localhost:3000")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials());
+
         app.UseAuthentication();
         app.UseAuthorization();
 
         app.UseExceptionHandlerMiddleware();
 
-        app.UseCors(options => options
-            .WithOrigins("http://localhost:3000")
-            .AllowAnyHeader()
-            .WithExposedHeaders("*")
-            .AllowAnyMethod()
-            .AllowCredentials());
-
         app.UseEndpoints(endpoints => endpoints.MapDefaultControllerRoute());
+    }
+
+    #endregion
+
+    #region -- Private helpers --
+
+    private Task OnJwtChallenge(JwtBearerChallengeContext context)
+    {
+        context.HandleResponse();
+
+        context.Response.StatusCode = 401;
+
+        var response = new ApiResponse
+        {
+            StatusCode = context.Response.StatusCode,
+            Message = "You must be authorized!",
+            Errors = new[] { "You must be authorized!" },
+        };
+
+        return context.Response.WriteAsJsonAsync(response);
     }
 
     #endregion
