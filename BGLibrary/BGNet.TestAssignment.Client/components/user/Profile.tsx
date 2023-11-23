@@ -6,31 +6,22 @@ import {
   Stack,
   Group,
   Button,
-  Loader,
 } from '@mantine/core';
-import { UserData, getUser } from '@/services/api';
+import { ApiResponse, UserData, getUser } from '@/services/api';
 import { DatePickerInput } from '@mantine/dates';
 import { useEffect, useState } from 'react';
 import { useLocalStorage } from '@mantine/hooks';
 import { useRouter } from 'next/navigation';
+import DataLoadingView from '../DataLoadingView';
 
 export default function Profile() {
-  const [user, setUser] = useState<UserData>();
-  const [token, setValue] = useLocalStorage({ key: 'jwt' });
+  const [userResponse, setUserResponse] = useState<ApiResponse<UserData>>();
+  const [, setValue] = useLocalStorage({ key: 'jwt' });
   const router = useRouter();
 
   useEffect(() => {
-    console.log(token);
-    if (token) {
-      getUser().then((user) => {
-        setUser(user.data);
-      });
-    }
-  }, [token]);
-
-  if (!user) {
-    return <Loader color="blue" />;
-  }
+    getUser().then((userResponse) => setUserResponse(userResponse));
+  }, []);
 
   async function onLogoutClick(e: React.FormEvent) {
     e.preventDefault();
@@ -40,59 +31,61 @@ export default function Profile() {
   }
 
   return (
-    <Paper radius="md" p="xl">
-      <Text size="lg" fw={500}>
-        Your profile information:
-      </Text>
+    <DataLoadingView apiResponse={userResponse}>
+      <Paper radius="md" p="xl">
+        <Text size="lg" fw={500}>
+          Your profile information:
+        </Text>
 
-      <Divider my="lg" />
+        <Divider my="lg" />
 
-      <Stack w={300}>
-        <TextInput
-          disabled
-          label="Username"
-          placeholder="Username"
-          value={user.username}
-          radius="md"
-        />
+        <Stack w={300}>
+          <TextInput
+            disabled
+            label="Username"
+            placeholder="Username"
+            value={userResponse?.data?.username}
+            radius="md"
+          />
 
-        <TextInput
-          disabled
-          label="Name"
-          placeholder="Name"
-          value={user.firstName}
-          radius="md"
-        />
+          <TextInput
+            disabled
+            label="Name"
+            placeholder="Name"
+            value={userResponse?.data?.firstName}
+            radius="md"
+          />
 
-        <TextInput
-          disabled
-          label="Surname"
-          placeholder="Surname"
-          value={user.lastName}
-          radius="md"
-        />
+          <TextInput
+            disabled
+            label="Surname"
+            placeholder="Surname"
+            value={userResponse?.data?.lastName}
+            radius="md"
+          />
 
-        <DatePickerInput
-          disabled
-          label="Birthday"
-          placeholder="Birthday"
-          value={user.dateOfBirth}
-        />
+          <DatePickerInput
+            disabled
+            label="Birthday"
+            placeholder="Birthday"
+            value={userResponse?.data?.dateOfBirth}
+          />
 
-        <TextInput
-          disabled
-          label="Address"
-          placeholder="Address"
-          value={user.address}
-          radius="md"
-        />
+          <TextInput
+            disabled
+            label="Address"
+            placeholder="Address"
+            value={userResponse?.data?.address}
+            radius="md"
+          />
 
-        <Group justify="space-between" mt="xl">
-          <Button radius="md" onClick={onLogoutClick}>
-            Logout
-          </Button>
-        </Group>
-      </Stack>
-    </Paper>
+          <Group justify="space-between" mt="xl">
+            <Button color="red" radius="md" onClick={onLogoutClick}>
+              Logout
+            </Button>
+          </Group>
+        </Stack>
+      </Paper>
+    </DataLoadingView>
   );
 }

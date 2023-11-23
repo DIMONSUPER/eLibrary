@@ -1,38 +1,48 @@
 'use client';
 
-import { Author, createAuthor, deleteAuthor } from '@/services/api';
-import { TextInput, Paper, Group, Button, Stack, Loader } from '@mantine/core';
+import { Author, createAuthor } from '@/services/api';
+import {
+  TextInput,
+  Paper,
+  Group,
+  Button,
+  Stack,
+  Notification,
+} from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
+import { useValidatedState } from '@mantine/hooks';
 import { useRouter } from 'next/navigation';
 
 export default function CreateAuthor() {
   const router = useRouter();
 
+  const [{ value, valid }, setErrorMessage] = useValidatedState(
+    '',
+    (val) => val == '',
+    true
+  );
   const { values, getInputProps } = useForm<Author>({
     initialValues: {
       id: 0,
-      name: '',
-      surname: '',
+      firstName: '',
+      lastName: '',
       dateOfBirth: new Date(2000, 11, 18),
-    },
-
-    validate: {
-      name: (val) => (val.length > 0 ? null : 'This field cant be empty'),
-      surname: (val) => (val.length > 0 ? null : 'This field cant be empty'),
     },
   });
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    try {
-      await createAuthor(values);
+    const createResponse = await createAuthor(values);
 
-      router.back();
-    } catch (error) {
-      console.error('createAuthor failed:', error);
+    if (createResponse.statusCode == 201) {
+      setErrorMessage('');
+    } else {
+      setErrorMessage(createResponse.errors.join('<br /><br />'));
     }
+
+    router.back();
   }
 
   return (
@@ -44,7 +54,7 @@ export default function CreateAuthor() {
             label="Name"
             placeholder="Name"
             radius="md"
-            {...getInputProps('name')}
+            {...getInputProps('firstName')}
           />
 
           <TextInput
@@ -52,7 +62,7 @@ export default function CreateAuthor() {
             label="Surname"
             placeholder="Surname"
             radius="md"
-            {...getInputProps('surname')}
+            {...getInputProps('lastName')}
           />
 
           <DatePickerInput
@@ -61,6 +71,12 @@ export default function CreateAuthor() {
             placeholder="Birthday"
             {...getInputProps('dateOfBirth')}
           />
+
+          {!valid && (
+            <Notification withCloseButton={false} color="red">
+              <p dangerouslySetInnerHTML={{ __html: value }} />
+            </Notification>
+          )}
 
           <Group justify="space-between" mt="lg">
             <Button type="submit" radius="md">

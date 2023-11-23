@@ -1,8 +1,8 @@
 'use client';
 
 import {
+  ApiResponse,
   Author,
-  Book,
   deleteBook,
   getAuthors,
   getBook,
@@ -16,21 +16,27 @@ import {
   Stack,
   NativeSelect,
   NumberInput,
-  Loader,
   Notification,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { upperFirst } from '@mantine/hooks';
+import { upperFirst, useValidatedState } from '@mantine/hooks';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import DataLoadingView from '../DataLoadingView';
 
 export default function BookDetails({ bookId }: { bookId: number }) {
   const router = useRouter();
 
-  const [authors, setAuthors] = useState<Author[]>();
-  const [book, setBook] = useState<Book>();
+  const [authorsResponse, setAuthorsResponse] =
+    useState<ApiResponse<Author[]>>();
+  const [authorNames, setAuthorNames] = useState<string[]>([]);
   const [authorValue, setAuthorValue] = useState('');
   const [opened, setOpened] = useState(false);
+  const [{ value, valid }, setErrorMessage] = useValidatedState(
+    '',
+    (val) => val == '',
+    true
+  );
 
   const { values, getInputProps, setValues } = useForm({
     initialValues: {
@@ -40,128 +46,129 @@ export default function BookDetails({ bookId }: { bookId: number }) {
       genre: '',
       authorId: 0,
     },
-
-    validate: {
-      title: (val) => (val.length > 0 ? null : 'This field cant be empty'),
-      publicationYear: (val) =>
-        val <= new Date().getFullYear()
-          ? null
-          : 'The field should contain a number no more then current year',
-      genre: (val) => (val.length > 0 ? null : 'This field cant be empty'),
-      authorId: (val) =>
-        val > 0 ? null : 'Create new author before creating a book',
-    },
   });
 
   useEffect(() => {
-    getBook(bookId).then((book) => {
-      setBook(book.data);
-      const initalAuthorName = `${book.data?.author?.firstName} ${book.data?.author?.lastName}`;
-      setAuthorValue(initalAuthorName);
-      setValues({
-        title: book.data?.title,
-        publicationYear: book.data?.publicationYear,
-        genre: book.data?.genre,
-        authorId: book.data?.author?.id,
+    getBook(bookId)
+      .then((bookResponse) => {
+        const initalAuthorName = `${bookResponse.data?.author?.firstName} ${bookResponse.data?.author?.lastName}`;
+        setAuthorValue(initalAuthorName);
+        setValues({
+          title: bookResponse.data?.title,
+          publicationYear: bookResponse.data?.publicationYear,
+          genre: bookResponse.data?.genre,
+          authorId: bookResponse.data?.author?.id,
+        });
+      })
+      .then(() => {
+        getAuthors().then((authorsResponse) => {
+          setAuthorsResponse(authorsResponse);
+          if (authorsResponse?.data && authorsResponse.data.length > 0) {
+            setAuthorNames(authorsResponse.data.map((x) => x.fullName!));
+          }
+        });
       });
-    });
-    getAuthors().then((authors) => {
-      setAuthors(authors.data);
-    });
   }, [bookId, setValues]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    try {
-      await updateBook(values);
-      setOpened(true);
+    const updateResponse = await updateBook(values);
 
+    if (updateResponse.statusCode == 200) {
+      setErrorMessage('');
+      setOpened(true);
       setTimeout(() => setOpened(false), 2000);
-    } catch (error) {
-      console.error('updateBook failed:', error);
+    } else {
+      setErrorMessage(updateResponse.errors.join('<br /><br />'));
     }
   }
 
   async function onClick(e: React.FormEvent) {
     e.preventDefault();
 
-    try {
-      await deleteBook(values.id);
+    const deleteResponse = await deleteBook(values.id);
 
+    if (deleteResponse.statusCode == 200) {
+      setErrorMessage('');
       router.back();
-    } catch (error) {
-      console.error('deleteBook failed:', error);
+    } else {
+      setErrorMessage(deleteResponse.errors.join('<br /><br />'));
     }
   }
 
-  if (!authors || !book) {
-    return <Loader color="blue" />;
-  }
-
-  const authorsNames = authors.map((x) => `${x.firstName} ${x.lastName}`);
-
   return (
-    <Paper radius="md" p="xl">
-      <form onSubmit={onSubmit}>
-        <Stack w={300}>
-          <TextInput
-            required
-            label="Title"
-            placeholder="Title"
-            radius="md"
-            {...getInputProps('title')}
-          />
-
-          <NumberInput
-            required
-            label="Publication year"
-            placeholder="Publication year"
-            radius="md"
-            {...getInputProps('publicationYear')}
-          />
-
-          <TextInput
-            required
-            label="Genre"
-            placeholder="Genre"
-            radius="md"
-            {...getInputProps('genre')}
-          />
-
-          <NativeSelect
-            required
-            value={authorValue}
-            label="Select author"
-            placeholder="Select author"
-            radius="md"
-            data={authorsNames}
-            onChange={(ev) => {
-              setAuthorValue(ev.currentTarget.value);
-              setValues({
-                authorId:
-                  authors[authorsNames.indexOf(ev.currentTarget.value)].id,
-              });
-            }}
-          />
-          {opened && (
-            <Notification
-              withCloseButton={false}
-              title="Book was successfully updated"
-              color="green"
+    <DataLoadingView apiResponse={authorsResponse}>
+      <Paper radius="md" p="xl">
+        <form onSubmit={onSubmit}>
+          <Stack w={300}>
+            <TextInput
+              required
+              label="Title"
+              placeholder="Title"
+              radius="md"
+              {...getInputProps('title')}
             />
-          )}
 
-          <Group justify="space-between" mt="lg">
-            <Button type="submit" radius="md">
-              {upperFirst('Update')}
-            </Button>
-            <Button color="red" type="button" radius="md" onClick={onClick}>
-              {upperFirst('Delete')}
-            </Button>
-          </Group>
-        </Stack>
-      </form>
-    </Paper>
+            <NumberInput
+              required
+              label="Publication year"
+              placeholder="Publication year"
+              radius="md"
+              {...getInputProps('publicationYear')}
+            />
+
+            <TextInput
+              required
+              label="Genre"
+              placeholder="Genre"
+              radius="md"
+              {...getInputProps('genre')}
+            />
+
+            <NativeSelect
+              required
+              value={authorValue}
+              label="Select author"
+              placeholder="Select author"
+              radius="md"
+              data={authorNames}
+              onChange={(ev) => {
+                setAuthorValue(ev.currentTarget.value);
+                setValues({
+                  authorId: authorsResponse?.data
+                    ? authorsResponse?.data[
+                        authorNames.indexOf(ev.currentTarget.value)
+                      ].id
+                    : 0,
+                });
+              }}
+            />
+            {opened && (
+              <Notification
+                withCloseButton={false}
+                title="Book was successfully updated"
+                color="green"
+              />
+            )}
+
+            {!valid && (
+              <Notification withCloseButton={false} color="red">
+                <p dangerouslySetInnerHTML={{ __html: value }} />
+              </Notification>
+            )}
+
+            <Group justify="space-between" mt="lg">
+              <Button type="submit" radius="md">
+                {upperFirst('Update')}
+              </Button>
+              <Button color="red" type="button" radius="md" onClick={onClick}>
+                {upperFirst('Delete')}
+              </Button>
+            </Group>
+          </Stack>
+        </form>
+      </Paper>
+    </DataLoadingView>
   );
 }

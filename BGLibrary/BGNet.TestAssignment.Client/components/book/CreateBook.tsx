@@ -1,4 +1,10 @@
-import { Author, Book, createBook, getAuthors } from '@/services/api';
+import {
+  ApiResponse,
+  Author,
+  Book,
+  createBook,
+  getAuthors,
+} from '@/services/api';
 import {
   TextInput,
   Paper,
@@ -7,17 +13,26 @@ import {
   Stack,
   NativeSelect,
   NumberInput,
-  Loader,
+  Notification,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import DataLoadingView from '../DataLoadingView';
+import { useValidatedState } from '@mantine/hooks';
 
 export default function CreateBook() {
   const router = useRouter();
 
-  const [authors, setAuthors] = useState<Author[]>();
+  const [authorsResponse, setAuthorsResponse] =
+    useState<ApiResponse<Author[]>>();
   const [authorValue, setAuthorValue] = useState('');
+  const [authorNames, setAuthorNames] = useState<string[]>([]);
+  const [{ value, valid }, setErrorMessage] = useValidatedState(
+    '',
+    (val) => val == '',
+    true
+  );
 
   const { values, getInputProps, setValues } = useForm<Book>({
     initialValues: {
@@ -27,97 +42,93 @@ export default function CreateBook() {
       genre: '',
       authorId: 0,
     },
-
-    validate: {
-      title: (val) => (val.length > 0 ? null : 'This field cant be empty'),
-      publicationYear: (val) =>
-        val <= new Date().getFullYear()
-          ? null
-          : 'The field should contain a number no more then current year',
-      genre: (val) => (val.length > 0 ? null : 'This field cant be empty'),
-      authorId: (val) =>
-        val > 0 ? null : 'Create new author before creating a book',
-    },
   });
 
   useEffect(() => {
-    getAuthors().then((authors) => {
-      setAuthors(authors.data);
-      if (authors?.data && authors.data.length > 0) {
-        setValues({ authorId: authors.data[0].id });
+    getAuthors().then((authorsResponse) => {
+      setAuthorsResponse(authorsResponse);
+      if (authorsResponse?.data && authorsResponse.data.length > 0) {
+        setValues({ authorId: authorsResponse.data[0].id });
+        setAuthorNames(authorsResponse.data.map((x) => x.fullName!));
       }
     });
-  }, []);
+  }, [setValues]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    try {
-      await createBook(values);
+    const creaeteBookResponse = await createBook(values);
 
+    if (creaeteBookResponse.statusCode == 201) {
+      setErrorMessage('');
       router.back();
-    } catch (error) {
-      console.error('createBook failed:', error);
+    } else {
+      setErrorMessage(creaeteBookResponse.errors.join('<br /><br />'));
     }
   }
 
-  if (!authors) {
-    return <Loader color="blue" />;
-  }
-
-  const authorsNames = authors.map((x) => `${x.firstName} ${x.lastName}`);
-
   return (
-    <Paper radius="md" p="xl">
-      <form onSubmit={onSubmit}>
-        <Stack w={300}>
-          <TextInput
-            required
-            label="Title"
-            placeholder="Title"
-            radius="md"
-            {...getInputProps('title')}
-          />
+    <DataLoadingView apiResponse={authorsResponse}>
+      <Paper radius="md" p="xl">
+        <form onSubmit={onSubmit}>
+          <Stack w={300}>
+            <TextInput
+              required
+              label="Title"
+              placeholder="Title"
+              radius="md"
+              {...getInputProps('title')}
+            />
 
-          <NumberInput
-            required
-            label="Publication year"
-            placeholder="Publication year"
-            radius="md"
-            {...getInputProps('publicationYear')}
-          />
+            <NumberInput
+              required
+              label="Publication year"
+              placeholder="Publication year"
+              radius="md"
+              {...getInputProps('publicationYear')}
+            />
 
-          <TextInput
-            required
-            label="Genre"
-            placeholder="Genre"
-            radius="md"
-            {...getInputProps('genre')}
-          />
+            <TextInput
+              required
+              label="Genre"
+              placeholder="Genre"
+              radius="md"
+              {...getInputProps('genre')}
+            />
 
-          <NativeSelect
-            required
-            value={authorValue}
-            label="Select author"
-            placeholder="Select author"
-            radius="md"
-            data={authorsNames}
-            onChange={(ev) => {
-              setAuthorValue(ev.currentTarget.value);
-              setValues({
-                authorId:
-                  authors[authorsNames.indexOf(ev.currentTarget.value)].id,
-              });
-            }}
-          />
+            <NativeSelect
+              required
+              value={authorValue}
+              label="Select author"
+              placeholder="Select author"
+              radius="md"
+              data={authorNames}
+              onChange={(ev) => {
+                setAuthorValue(ev.currentTarget.value);
+                setValues({
+                  authorId: authorsResponse?.data
+                    ? authorsResponse?.data[
+                        authorNames.indexOf(ev.currentTarget.value)
+                      ].id
+                    : 0,
+                });
+              }}
+            />
 
-          <Group justify="space-between" mt="lg">
-            <Button type="submit" radius="md">
-              Create
-            </Button>
-          </Group>
-        </Stack>
-      </form>
-    </Paper>
+            {!valid && (
+              <Notification withCloseButton={false} color="red">
+                <p dangerouslySetInnerHTML={{ __html: value }} />
+              </Notification>
+            )}
+
+            <Group justify="space-between" mt="lg">
+              <Button type="submit" radius="md">
+                Create
+              </Button>
+            </Group>
+          </Stack>
+        </form>
+      </Paper>
+    </DataLoadingView>
   );
 }

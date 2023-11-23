@@ -39,20 +39,20 @@ export type Book = {
   authorId: number;
 };
 
-export interface ApiResponse<T> {
+export type ApiResponse<T> = {
   statusCode: number;
   message: string;
   data?: T;
   errors: string[];
-}
+};
 
 function generateHeaders() {
   var headers: { [headerName: string]: string } = {};
   headers['Content-Type'] = 'application/json';
+  headers['Origin'] = 'http://localhost:3000';
 
-  const jwt = `${JSON.parse(localStorage.getItem('jwt') ?? '')}`;
-
-  if (jwt) {
+  if (localStorage.getItem('jwt')) {
+    const jwt = JSON.parse(localStorage.getItem('jwt') ?? '');
     headers['Authorization'] = `Bearer ${jwt}`;
   }
 
@@ -101,7 +101,11 @@ export const getBooks = async () => {
     const books = result.data;
 
     for (let i in books) {
-      books[i].author.dateOfBirth = new Date(books[i].author.dateOfBirth);
+      const author = books[i].author;
+
+      if (author != null) {
+        author.dateOfBirth = new Date(author.dateOfBirth);
+      }
     }
   }
 
@@ -117,7 +121,7 @@ export const deleteBook = (id: number) => makeRequest(`book/${id}`, 'DELETE');
 export const getBook = async (id: number) => {
   const result = await makeRequest<Book>(`book/${id}`, 'GET');
 
-  if (result?.data != null) {
+  if (result?.data?.author != null) {
     result.data.author.dateOfBirth = new Date(result.data.author.dateOfBirth);
   }
 
@@ -125,7 +129,7 @@ export const getBook = async (id: number) => {
 };
 
 export const getAuthors = async () => {
-  const result = await makeRequest<Author[]>('book', 'GET');
+  const result = await makeRequest<Author[]>('author', 'GET');
 
   if (result?.data != null) {
     const authors = result.data;
@@ -148,7 +152,7 @@ export const deleteAuthor = (id: number) =>
   makeRequest(`author/${id}`, 'DELETE');
 
 export const getAuthor = async (id: number) => {
-  const result = await makeRequest<Author>(`book/${id}`, 'GET');
+  const result = await makeRequest<Author>(`author/${id}`, 'GET');
 
   if (result?.data != null) {
     result.data.dateOfBirth = new Date(result.data.dateOfBirth);

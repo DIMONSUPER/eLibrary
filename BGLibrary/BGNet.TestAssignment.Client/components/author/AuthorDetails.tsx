@@ -1,6 +1,12 @@
 'use client';
 
-import { Author, deleteAuthor, getAuthor, updateAuthor } from '@/services/api';
+import {
+  ApiResponse,
+  Author,
+  deleteAuthor,
+  getAuthor,
+  updateAuthor,
+} from '@/services/api';
 import {
   TextInput,
   Paper,
@@ -12,13 +18,20 @@ import {
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
+import { useValidatedState } from '@mantine/hooks';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import DataLoadingView from '../DataLoadingView';
 
 export default function AuthorDetails({ authorId }: { authorId: number }) {
   const router = useRouter();
+  const [authorResponse, setAuthorResponse] = useState<ApiResponse<Author>>();
   const [opened, setOpened] = useState(false);
-  const [author, setAuthor] = useState<Author>();
+  const [{ value, valid }, setErrorMessage] = useValidatedState(
+    '',
+    (val) => val == '',
+    true
+  );
 
   const { values, getInputProps, setValues } = useForm<Author>({
     initialValues: {
@@ -35,13 +48,12 @@ export default function AuthorDetails({ authorId }: { authorId: number }) {
   });
 
   useEffect(() => {
-    getAuthor(authorId).then((author) => {
-      console.log(author);
-      setAuthor(author.data);
+    getAuthor(authorId).then((authorResponse) => {
+      setAuthorResponse(authorResponse);
       setValues({
-        firstName: author.data?.firstName,
-        lastName: author.data?.lastName,
-        dateOfBirth: author.data?.dateOfBirth,
+        firstName: authorResponse.data?.firstName,
+        lastName: authorResponse.data?.lastName,
+        dateOfBirth: authorResponse.data?.dateOfBirth,
       });
     });
   }, [authorId, setValues]);
@@ -49,77 +61,82 @@ export default function AuthorDetails({ authorId }: { authorId: number }) {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    try {
-      await updateAuthor(values);
+    const updateResponse = await updateAuthor(values);
+    if (updateResponse.statusCode == 200) {
+      setErrorMessage('');
       setOpened(true);
-
       setTimeout(() => setOpened(false), 2000);
-    } catch (error) {
-      console.error('updateAuthor failed:', error);
+    } else {
+      setErrorMessage(updateResponse.errors.join('<br /><br />'));
     }
   }
 
   async function onClick(e: React.FormEvent) {
     e.preventDefault();
 
-    try {
-      await deleteAuthor(values.id);
+    const deleteResponse = await deleteAuthor(values.id);
 
+    if (deleteResponse.statusCode == 200) {
+      setErrorMessage('');
       router.back();
-    } catch (error) {
-      console.error('deleteAuthor failed:', error);
+    } else {
+      setErrorMessage(deleteResponse.errors.join('<br /><br />'));
     }
   }
 
-  if (!author) {
-    return <Loader color="blue" />;
-  }
-
   return (
-    <Paper radius="md" p="xl">
-      <form onSubmit={onSubmit}>
-        <Stack w={300}>
-          <TextInput
-            required
-            label="Name"
-            placeholder="Name"
-            radius="md"
-            {...getInputProps('name')}
-          />
-
-          <TextInput
-            required
-            label="Surname"
-            placeholder="Surname"
-            radius="md"
-            {...getInputProps('firstName')}
-          />
-
-          <DatePickerInput
-            required
-            label="Birthday"
-            placeholder="Birthday"
-            {...getInputProps('dateOfBirth')}
-          />
-
-          {opened && (
-            <Notification
-              withCloseButton={false}
-              title="Author was successfully updated"
-              color="green"
+    <DataLoadingView apiResponse={authorResponse}>
+      <Paper radius="md" p="xl">
+        <form onSubmit={onSubmit}>
+          <Stack w={300}>
+            <TextInput
+              required
+              label="Name"
+              placeholder="Name"
+              radius="md"
+              {...getInputProps('firstName')}
             />
-          )}
 
-          <Group justify="space-between" mt="lg">
-            <Button type="submit" radius="md">
-              Update
-            </Button>
-            <Button color="red" type="button" radius="md" onClick={onClick}>
-              Delete (with all books)
-            </Button>
-          </Group>
-        </Stack>
-      </form>
-    </Paper>
+            <TextInput
+              required
+              label="Surname"
+              placeholder="Surname"
+              radius="md"
+              {...getInputProps('lastName')}
+            />
+
+            <DatePickerInput
+              required
+              label="Birthday"
+              placeholder="Birthday"
+              {...getInputProps('dateOfBirth')}
+            />
+
+            {opened && (
+              <Notification
+                withCloseButton={false}
+                title="Author was successfully updated"
+                color="green"
+              />
+            )}
+
+            {!valid && (
+              <Notification withCloseButton={false} color="red">
+                <p dangerouslySetInnerHTML={{ __html: value }} />
+              </Notification>
+            )}
+
+            <Group justify="space-between" mt="lg">
+              <Button type="submit" radius="md">
+                Update
+              </Button>
+              <Button color="red" type="button" radius="md" onClick={onClick}>
+                Delete (with all books)
+              </Button>
+            </Group>
+          </Stack>
+        </form>
+      </Paper>
+    </DataLoadingView>
   );
 }
