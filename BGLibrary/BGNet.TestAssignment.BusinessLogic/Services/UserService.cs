@@ -20,17 +20,20 @@ public class UserService : IUserService
     public ShortUserDto Create(FullUserDto createUserDto)
     {
         var user = createUserDto.Adapt<User>();
+        user.Username = user.Username.ToLower();
 
         return _repository.Create(user).Adapt<ShortUserDto>();
     }
 
     public FullUserDto? GetFullUserByUsername(string username)
     {
+        username = username.ToLower();
         return _repository.GetNoTrackingQueryable<User>().SingleOrDefault(x => x.Username == username).Adapt<FullUserDto>();
     }
 
     public ShortUserDto? GetShortUserByUsername(string username)
     {
+        username = username.ToLower();
         return _repository.GetNoTrackingQueryable<User>().SingleOrDefault(x => x.Username == username).Adapt<ShortUserDto>();
     }
 
@@ -43,6 +46,7 @@ public class UserService : IUserService
 
     public bool VerifyUsernameIsNotBusy(string username)
     {
+        username = username.ToLower();
         return !_repository.GetNoTrackingQueryable<User>().Any(x => x.Username == username);
     }
 

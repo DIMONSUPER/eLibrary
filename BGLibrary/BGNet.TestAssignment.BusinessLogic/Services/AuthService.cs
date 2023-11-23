@@ -1,5 +1,4 @@
 ﻿using BGNet.TestAssignment.Common.Configurations.Jwt;
-using BGNet.TestAssignment.DataAccess.Entities;
 using BGNet.TestAssignment.Models.Dtos;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
